@@ -317,5 +317,48 @@ public class DatasetService {
         }
         return Result.ok(result);
     }
-
+    public Result chartData(Long id, String chartType, String categoryColumn, String valueColumn, String agg) {
+        String type = chartType == null ? "bar" : chartType.toLowerCase();
+        List<String> categories = new ArrayList<>();
+        List<Double> values = new ArrayList<>();
+        if ("line".equals(type)) {
+            Result t = trend(id, categoryColumn, valueColumn, agg);
+            if (!Boolean.TRUE.equals(t.getSuccess())) {
+                return t;
+            }
+            Map<String, Object> tData = (Map<String, Object>) t.getData();
+            List<Map<String, Object>> series = (List<Map<String, Object>>) tData.get("series");
+            for (Map<String, Object> point : series) {
+                categories.add(String.valueOf(point.get("date")));
+                values.add((Double) point.get("value"));
+            }
+        } else {
+            Result g = groupBy(id, categoryColumn, valueColumn, agg);
+            if (!Boolean.TRUE.equals(g.getSuccess())) {
+                return g;
+            }
+            List<Map<String, Object>> items = (List<Map<String, Object>>) g.getData();
+            for (Map<String, Object> item : items) {
+                categories.add(String.valueOf(item.get("group")));
+                values.add((Double) item.get("value"));
+            }
+            if (!"pie".equals(type)) {
+                type = "bar";
+            }
+        }
+        List<Map<String, Object>> pieData = new ArrayList<>();
+        for (int i = 0; i < categories.size(); i++) {
+            Map<String, Object> p = new LinkedHashMap<>();
+            p.put("name", categories.get(i));
+            p.put("value", values.get(i));
+            pieData.add(p);
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("chartType", type);
+        result.put("categories", categories);
+        result.put("seriesName", valueColumn);
+        result.put("seriesData", values);
+        result.put("pieData", pieData);
+        return Result.ok(result);
+    }
 }

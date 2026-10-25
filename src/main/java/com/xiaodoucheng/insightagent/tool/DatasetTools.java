@@ -63,5 +63,21 @@ public class DatasetTools {
             return "统计数据序列化失败";
         }
     }
-
+    @Tool(description = "生成图表数据：返回可直接供前端 ECharts 渲染的结构化数据，含类目数组、数值数组和饼图数据。当用户想看图、画图、要柱状图/折线图/饼图时调用")
+    public String chartData(@ToolParam(description = "数据集ID") Long datasetId,
+                            @ToolParam(description = "图表类型：bar 柱状图、line 折线图、pie 饼图") String chartType,
+                            @ToolParam(description = "类目列名，例如 门店；折线图时传日期列名") String categoryColumn,
+                            @ToolParam(description = "数值列名，例如 销售额") String valueColumn,
+                            @ToolParam(description = "聚合方式：SUM、AVG、COUNT、MAX、MIN 之一") String agg) {
+        System.out.println("chartData, datasetId=" + datasetId + ", type=" + chartType + ", category=" + categoryColumn + ", value=" + valueColumn + ", agg=" + agg);
+        var result = datasetService.chartData(datasetId, chartType, categoryColumn, valueColumn, agg);
+        if (!Boolean.TRUE.equals(result.getSuccess())) {
+            return "生成图表数据失败，请检查列名是否正确";
+        }
+        try {
+            return objectMapper.writeValueAsString(result.getData());
+        } catch (JsonProcessingException e) {
+            return "统计数据序列化失败";
+        }
+    }
 }
