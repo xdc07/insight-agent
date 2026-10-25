@@ -221,5 +221,70 @@ public class DatasetService {
     private double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
+    public Result groupBy(Long id, String groupColumn, String valueColumn, String agg) {
+        Dataset dataset = datasetMapper.selectById(id);
+        Long userId = UserHolder.getUser().getId();
+        if (dataset == null || !dataset.getUserId().equals(userId)) {
+            return Result.fail("数据集不存在");
+        }
+        List<DatasetRow> rows = datasetRowMapper.selectList(new LambdaQueryWrapper<DatasetRow>()
+                .eq(DatasetRow::getDatasetId, id)
+                .orderByAsc(DatasetRow::getRowIndex));
+        List<String> columns;
+        List<Map<String, String>> data = new ArrayList<>();
+        try {
+            columns = objectMapper.readValue(dataset.getColumnsJson(),
+                    new TypeReference<List<String>>() {});
+            for (DatasetRow row : rows) {
+                data.add(objectMapper.readValue(row.getDataJson(),
+                        new TypeReference<Map<String, String>>() {}));
+            }
+        } catch (JsonProcessingException e) {
+            return Result.fail("数据解析失败");
+        }
+        if (!columns.contains(groupColumn)) {
+            return Result.fail("分组列不存在：" + groupColumn);
+        }
+        if (!columns.contains(valueColumn)) {
+            return Result.fail("数值列不存在：" + valueColumn);
+        }
+        String aggType = agg == null ? "SUM" : agg.toUpperCase();
+        Map<String, List<Double>> grouped = new LinkedHashMap<>();
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        for (Map<String, String> row : data) {
+            String group = row.get(groupColumn);
+            if (group == null || group.isBlank()) {
+                group = "(空)";
+            }
+            grouped.putIfAbsent(group, new ArrayList<>());
+            counts.merge(group, 1, Integer::sum);
+            String raw = row.get(valueColumn);
+            if (raw != null && !raw.isBlank()) {
+                try {
+                    grouped.get(group).add(Double.parseDouble(raw.trim()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+        }
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, List<Double>> e : grouped.entrySet()) {
+            List<Double> values = e.getValue();
+            double v;
+            switch (aggType) {
+                case "AVG" -> v = values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+                case "COUNT" -> v = counts.get(e.getKey());
+                case "MAX" -> v = values.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+                case "MIN" -> v = values.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+                default -> v = values.stream().mapToDouble(Double::doubleValue).sum();
+            }
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("group", e.getKey());
+            item.put("value", Math.round(v * 100.0) / 100.0);
+            item.put("count", counts.get(e.getKey()));
+            result.add(item);
+        }
+        result.sort((a, b) -> Double.compare((Double) b.get("value"), (Double) a.get("value")));
+        return Result.ok(result);
+    }
 
 }

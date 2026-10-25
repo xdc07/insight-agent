@@ -31,4 +31,20 @@ public class DatasetTools {
             return "统计数据序列化失败";
         }
     }
+    @Tool(description = "对指定数据集做分组统计：按分组列分组，对数值列做聚合。需要比较不同类别的数值时调用，例如各地区的销售额总和、各渠道的平均订单量")
+    public String groupStats(@ToolParam(description = "数据集ID") Long datasetId,
+                             @ToolParam(description = "分组列名，例如 地区") String groupColumn,
+                             @ToolParam(description = "要统计的数值列名，例如 销售额") String valueColumn,
+                             @ToolParam(description = "聚合方式，取值 SUM 求和、AVG 平均、COUNT 计数、MAX 最大、MIN 最小") String agg) {
+        System.out.println("groupStats, datasetId=" + datasetId + ", group=" + groupColumn + ", value=" + valueColumn + ", agg=" + agg);
+        var result = datasetService.groupBy(datasetId, groupColumn, valueColumn, agg);
+        if (!Boolean.TRUE.equals(result.getSuccess())) {
+            return "分组统计失败，请检查列名是否正确";
+        }
+        try {
+            return objectMapper.writeValueAsString(result.getData());
+        } catch (JsonProcessingException e) {
+            return "统计数据序列化失败";
+        }
+    }
 }
