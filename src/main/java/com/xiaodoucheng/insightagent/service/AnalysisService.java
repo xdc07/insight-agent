@@ -8,11 +8,12 @@ import com.xiaodoucheng.insightagent.entity.AnalysisRecord;
 import com.xiaodoucheng.insightagent.entity.Dataset;
 import com.xiaodoucheng.insightagent.mapper.AnalysisRecordMapper;
 import com.xiaodoucheng.insightagent.mapper.DatasetMapper;
+import com.xiaodoucheng.insightagent.tool.DatasetTools;
 import com.xiaodoucheng.insightagent.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
-
+import com.xiaodoucheng.insightagent.tool.DatasetTools;
 import java.util.List;
 
 @Slf4j
@@ -23,15 +24,17 @@ public class AnalysisService {
     private final DatasetMapper datasetMapper;
     private final AnalysisRecordMapper analysisRecordMapper;
     private final ChatClient chatClient;
+    private final DatasetTools datasetTools;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AnalysisService(DatasetService datasetService, DatasetMapper datasetMapper,
                            AnalysisRecordMapper analysisRecordMapper,
-                           ChatClient.Builder chatClientBuilder) {
+                           ChatClient.Builder chatClientBuilder, DatasetTools datasetTools) {
         this.datasetService = datasetService;
         this.datasetMapper = datasetMapper;
         this.analysisRecordMapper = analysisRecordMapper;
         this.chatClient = chatClientBuilder.build();
+        this.datasetTools = datasetTools;
     }
 
     public Result analyze(Long datasetId) {
@@ -77,6 +80,14 @@ public class AnalysisService {
                 .eq(AnalysisRecord::getDatasetId, datasetId)
                 .orderByDesc(AnalysisRecord::getCreateTime));
         return Result.ok(records);
+    }
+    public String chat(Long datasetId, String question) {
+        return chatClient.prompt()
+                .system("你是一名数据分析助手。回答涉及具体数字时，必须调用工具获取真实统计，不许编造。当前数据集ID是：" + datasetId)
+                .user(question)
+                .tools(datasetTools)
+                .call()
+                .content();
     }
 }
 

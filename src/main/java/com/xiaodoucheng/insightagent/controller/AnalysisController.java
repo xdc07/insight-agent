@@ -2,11 +2,7 @@ package com.xiaodoucheng.insightagent.controller;
 
 import com.xiaodoucheng.insightagent.common.Result;
 import com.xiaodoucheng.insightagent.service.AnalysisService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/analysis")
@@ -26,6 +22,10 @@ public class AnalysisController {
     @GetMapping("/{datasetId}")
     public Result history(@PathVariable Long datasetId) {
         return analysisService.history(datasetId);
+    }
+    @PostMapping("/chat/{datasetId}")
+    public Result chat(@PathVariable Long datasetId, @RequestParam String question) {
+        return Result.ok(analysisService.chat(datasetId, question));
     }
 }
 
