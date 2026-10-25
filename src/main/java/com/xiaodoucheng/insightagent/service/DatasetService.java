@@ -286,5 +286,36 @@ public class DatasetService {
         result.sort((a, b) -> Double.compare((Double) b.get("value"), (Double) a.get("value")));
         return Result.ok(result);
     }
+    public Result trend(Long id, String dateColumn, String valueColumn, String agg) {
+        Result grouped = groupBy(id, dateColumn, valueColumn, agg);
+        if (!Boolean.TRUE.equals(grouped.getSuccess())) {
+            return grouped;
+        }
+        List<Map<String, Object>> items = (List<Map<String, Object>>) grouped.getData();
+        items.sort((a, b) -> String.valueOf(a.get("group")).compareTo(String.valueOf(b.get("group"))));
+        List<Map<String, Object>> series = new ArrayList<>();
+        Double prev = null;
+        for (Map<String, Object> item : items) {
+            double v = (Double) item.get("value");
+            Map<String, Object> point = new LinkedHashMap<>();
+            point.put("date", item.get("group"));
+            point.put("value", v);
+            if (prev == null || prev == 0) {
+                point.put("changeRate", null);
+            } else {
+                point.put("changeRate", Math.round((v - prev) / prev * 10000.0) / 100.0);
+            }
+            series.add(point);
+            prev = v;
+        }
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("series", series);
+        if (!series.isEmpty()) {
+            double first = (Double) series.get(0).get("value");
+            double last = (Double) series.get(series.size() - 1).get("value");
+            result.put("overallChangeRate", first == 0 ? null : Math.round((last - first) / first * 10000.0) / 100.0);
+        }
+        return Result.ok(result);
+    }
 
 }

@@ -47,4 +47,21 @@ public class DatasetTools {
             return "统计数据序列化失败";
         }
     }
+    @Tool(description = "分析指定数据集中某个数值随时间的变化趋势：按日期列分组聚合数值列，返回按日期排序的序列、每期环比变化率（%）和整体变化率（%）。需要看走势、涨跌、趋势时调用，例如最近销售额趋势怎么样")
+    public String trendAnalysis(@ToolParam(description = "数据集ID") Long datasetId,
+                                @ToolParam(description = "日期列名，例如 日期") String dateColumn,
+                                @ToolParam(description = "要观察的数值列名，例如 销售额") String valueColumn,
+                                @ToolParam(description = "聚合方式：SUM、AVG、COUNT、MAX、MIN 之一") String agg) {
+        System.out.println("trendAnalysis, datasetId=" + datasetId + ", date=" + dateColumn + ", value=" + valueColumn + ", agg=" + agg);
+        var result = datasetService.trend(datasetId, dateColumn, valueColumn, agg);
+        if (!Boolean.TRUE.equals(result.getSuccess())) {
+            return "趋势分析失败，请检查列名是否正确";
+        }
+        try {
+            return objectMapper.writeValueAsString(result.getData());
+        } catch (JsonProcessingException e) {
+            return "统计数据序列化失败";
+        }
+    }
+
 }
