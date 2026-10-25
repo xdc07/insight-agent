@@ -6,6 +6,7 @@ import com.xiaodoucheng.insightagent.common.Result;
 import com.xiaodoucheng.insightagent.dto.LoginFormDTO;
 import com.xiaodoucheng.insightagent.entity.User;
 import com.xiaodoucheng.insightagent.mapper.UserMapper;
+import com.xiaodoucheng.insightagent.utils.UserHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -60,10 +61,31 @@ public class UserService {
         userMap.put("id", user.getId().toString());
         userMap.put("phone", user.getPhone());
         userMap.put("nickName", user.getNickName());
+        if (user.getIcon() != null) {
+            userMap.put("icon", user.getIcon());
+        }
         String tokenKey = RedisConstants.LOGIN_USER_KEY + token;
         stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
         stringRedisTemplate.expire(tokenKey, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
         return Result.ok(token);
     }
+    public Result updateProfile(String nickName, String icon, String token) {
+        User user = userMapper.selectById(UserHolder.getUser().getId());
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        String tokenKey = RedisConstants.LOGIN_USER_KEY + token;
+        if (nickName != null && !nickName.isBlank()) {
+            user.setNickName(nickName.trim());
+            stringRedisTemplate.opsForHash().put(tokenKey, "nickName", user.getNickName());
+        }
+        if (icon != null) {
+            user.setIcon(icon);
+            stringRedisTemplate.opsForHash().put(tokenKey, "icon", icon);
+        }
+        userMapper.updateById(user);
+        return Result.ok();
+    }
+
 }
 

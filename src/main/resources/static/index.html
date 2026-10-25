@@ -4,122 +4,367 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>InsightAgent 智能数据分析助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABAAEADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD6oooooAKKKqalfwafb+dcMQCdqgclj6Ck2oq7Gk27It0Vl6XrdpqMhjiJWQfwtWpSjJSV4scouLswoooqiQooooAK5Hx9dWcUFs9xfQ2zRSYzKwC/Nxj69MCtXXddh0zMZwZtu7BbGB6151fyLcm4vW0621S8tVNzb29yxAJUHJXAOXx0HfNcteUai9j3OmjBx/ePoa2klYNViumnLIhGVCgbse9d9ZX0F2v7l/m7qeteVeIZItD0vTbzU7qytbuZB9oWIFIi55+RW5Hp+HaotP8AFC2sysfMIzkMprmpz+q/u7aHVOl9ZXPHc9korCs/E+my2FvcSXCqZR0Cng9Dn0rahmjnjWSF1dD0Ir0I1Iz+FnnShKPxIpazq9ppECS3jMFdtqhVySayrLxba6jerb2ETOWBbe52gAdTirHjDRX1vS/Kt5FjuY2DxM3TPcH61454Gvnh8Q3F3KXWGCQxbWGODnJ9q5q1adOaT+E6qNGFSDf2j13UNJtr+6kuLjcZHULgYwAPY1594osW0e8jTzSI2+aOQcEc/piu6bxDpkcQeW6jjU8fN/KvNPHOvxa1qkKWmTbQAqrHjeT1P04qMS6fLeO5phVU57SWhleILW21SJYtR3XIBDAuxJz9c571RlkC7UUYHQAUhiu0QGKRCmMBZlPH0I/wrp/BvhdtX1BUvbiCKIDcRExZnHcLkDB+tcFnUaijvclSTk0Nhv8AOkRQCNkdlUgMNu4Z+8PUcHmvR/h00z6bOz7vK3AIT3IHOP0rfm0jT54IYZrOB44VCxhkB2AdhVuKNIo1jiRURRgKowBXfhcEsPK6Z5lfFe1jy2H18+XUeq23ibWbe502VVmeRmSGMkYySGGO3P5e9fQdJXRXoKurMxo1nSbaR8z2wvXiFmqvJubIVQWOe3SvQPC3w3lnMdzrheCMHctujfO3+8e30HP0r1YRorlgihj1IAzT6yp4OMXeTubVMZKStHQ5O78B6RM2YvPtx/dR8r+RzV/QvC9ho05ng82SYjAeRs7R7AcVu0V0KlBO6RzurNqzYUUUVoZn/9k=">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <style>
+    :root {
+        --primary: #b07a45;
+        --primary-dark: #8f5e2e;
+        --honey: #d9a05b;
+        --bg: #f7f1e6;
+        --text: #33291f;
+        --muted: #a08b72;
+        --border: #eadfce;
+    }
     * { box-sizing: border-box; }
-    body { font-family: "Microsoft YaHei", Arial, sans-serif; margin: 0; background: #f5f6fa; color: #222; }
-    header { background: #2f54eb; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { font-size: 20px; margin: 0; }
-    header .user { font-size: 14px; }
-    .wrap { max-width: 1080px; margin: 20px auto; padding: 0 16px; }
-    .card { background: #fff; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    .card h2 { font-size: 16px; margin: 0 0 12px; }
-    input, select, button { font-size: 14px; padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 6px; }
-    button { background: #2f54eb; color: #fff; border: none; cursor: pointer; }
-    button:hover { background: #1d39c4; }
-    button:disabled { background: #a6a6a6; cursor: not-allowed; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .dataset-item { padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
-    .dataset-item:hover { border-color: #2f54eb; }
-    .dataset-item.active { border-color: #2f54eb; background: #f0f5ff; }
-    .dataset-item .meta { color: #888; font-size: 12px; margin-top: 2px; }
-    .hint { color: #888; font-size: 13px; }
+    body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    input, select, button { font-size: 14px; padding: 8px 12px; border: 1px solid #e0d2ba; border-radius: 8px; outline: none; background: #fffdf9; }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(176,122,69,.16); }
+    button { background: var(--primary); color: #fff; border: none; cursor: pointer; }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { background: #cbb894; cursor: not-allowed; }
+    button.ghost { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    button.ghost:hover { background: #fdf6ec; }
+    .hint { color: var(--muted); font-size: 13px; }
 
-    /* ---------- 对话气泡 ---------- */
-    #chatLog { height: 380px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 16px; background: #f7f8fa; display: flex; flex-direction: column; gap: 14px; }
-    .msg { display: flex; flex-direction: column; max-width: 78%; }
-    .msg .name { font-size: 12px; color: #999; margin-bottom: 4px; }
-    .msg .bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.65; font-size: 14px; word-break: break-word; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
-    .msg.me { align-self: flex-end; align-items: flex-end; }
-    .msg.me .bubble { background: #2f54eb; color: #fff; border-bottom-right-radius: 4px; white-space: pre-wrap; }
-    .msg.ai { align-self: flex-start; align-items: flex-start; }
-    .msg.ai .bubble { background: #fff; border: 1px solid #e8e8e8; border-bottom-left-radius: 4px; }
+    /* ---------- 登录页 ---------- */
+    #loginView {
+        min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;
+        background:
+            radial-gradient(rgba(255,255,255,.16) 1.5px, transparent 1.6px) 0 0 / 22px 22px,
+            linear-gradient(135deg, #a9713f 0%, #dfa964 100%);
+    }
+    .login-card { background: #fffdf9; border-radius: 16px; padding: 36px 34px; width: 400px; max-width: 100%; box-shadow: 0 16px 40px rgba(90,58,20,.3); }
+    .login-card .logo {
+        width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 14px; overflow: hidden;
+        background: #fff; border: 3px solid #fff; box-shadow: 0 8px 22px rgba(90,58,20,.22);
+    }
+    .login-card .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .login-card h1 { text-align: center; font-size: 26px; margin: 0 0 6px; font-family: 'Fredoka', 'Microsoft YaHei', sans-serif; letter-spacing: .6px; background: linear-gradient(90deg, var(--primary-dark), var(--honey)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .login-card .sub { text-align: center; color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+    .login-card label { display: block; font-size: 13px; color: #6b5844; margin: 14px 0 6px; }
+    .login-card input { width: 100%; padding: 10px 12px; }
+    .login-row { display: flex; gap: 10px; }
+    .login-row input { flex: 1; }
+    .login-card .big { width: 100%; padding: 11px; font-size: 15px; margin-top: 22px; border-radius: 10px; }
+
+    /* ---------- 应用框架 ---------- */
+    header {
+        background: linear-gradient(90deg, #a9713f 0%, #d9a05b 100%);
+        color: #fff; padding: 12px 22px; display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 2px 10px rgba(143,94,46,.35);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand .logo { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #fff; border: 2px solid rgba(255,255,255,.6); flex: none; }
+    .brand .logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .brand h1 { font-size: 18px; margin: 0; font-family: 'Fredoka', 'Microsoft YaHei', sans-serif; letter-spacing: .6px; }
+    .user-chip { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35); padding: 6px 13px; border-radius: 999px; font-size: 13px; }
+    .dataset-bar {
+        background: #fffdf9; border-bottom: 1px solid var(--border); padding: 10px 22px;
+        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    }
+    .dataset-bar .lbl { font-size: 13px; color: #6b5844; }
+    .dataset-bar select { min-width: 240px; max-width: 100%; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 18px 16px 92px; }
+    .view { display: none; }
+    .view.active { display: block; }
+    #view-chat.active { display: flex; flex-direction: column; height: calc(100dvh - 235px); min-height: 400px; }
+    .card { background: #fffdf9; border-radius: 12px; padding: 20px 22px; margin-bottom: 18px; box-shadow: 0 2px 10px rgba(120,84,40,.07); border: 1px solid var(--border); }
+    .card h2 { font-size: 16px; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+    .card h2::before { content: ""; width: 4px; height: 16px; border-radius: 2px; background: linear-gradient(180deg, var(--primary), var(--honey)); }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .card-head h2 { margin: 0; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* 底部导航 */
+    .tabbar {
+        position: fixed; left: 0; right: 0; bottom: 0; height: calc(62px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        background: #fffdf9; border-top: 1px solid var(--border); display: flex; z-index: 50;
+        box-shadow: 0 -2px 12px rgba(120,84,40,.08);
+    }
+    .tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; color: var(--muted); font-size: 12px; user-select: none; }
+    .tab .icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; filter: saturate(.3); opacity: .6; transition: all .15s; }
+    .tab .icon svg { width: 29px; height: 29px; display: block; }
+    .tab.active { color: var(--primary); font-weight: 600; }
+    .tab.active .icon { filter: none; opacity: 1; background: #f7ead2; box-shadow: inset 0 0 0 1px #ecd9bd; }
+
+    /* ---------- 对话 ---------- */
+    #chatLog { flex: 1; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; padding: 18px; background: linear-gradient(180deg, #fffdf8, #faf3e4); display: flex; flex-direction: column; gap: 16px; }
+    #chatLog::-webkit-scrollbar { width: 8px; }
+    #chatLog::-webkit-scrollbar-thumb { background: #d8c6a8; border-radius: 4px; }
+    .msg { display: flex; gap: 10px; max-width: 85%; }
+    .msg .avatar { width: 34px; height: 34px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; color: #fff; }
+    .msg.ai .avatar { background: #fff; border: 1px solid var(--border); overflow: hidden; }
+    .msg .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+    .msg.me .avatar { background: #c98f4e; }
+    .msg .col { display: flex; flex-direction: column; }
+    .msg .name { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .msg .bubble { padding: 11px 15px; border-radius: 12px; line-height: 1.65; font-size: 14px; word-break: break-word; box-shadow: 0 1px 3px rgba(120,84,40,.1); }
+    .msg.me { align-self: flex-end; flex-direction: row-reverse; }
+    .msg.me .col { align-items: flex-end; }
+    .msg.me .bubble { background: linear-gradient(135deg, var(--primary), #cf9a5f); color: #fff; border-top-right-radius: 4px; white-space: pre-wrap; }
+    .msg.ai { align-self: flex-start; }
+    .msg.ai .bubble { background: #fff; border: 1px solid var(--border); border-top-left-radius: 4px; }
     .msg.ai .bubble > :first-child { margin-top: 0; }
     .msg.ai .bubble > :last-child { margin-bottom: 0; }
     .msg.ai .bubble table { border-collapse: collapse; margin: 8px 0; }
-    .msg.ai .bubble th, .msg.ai .bubble td { border: 1px solid #ddd; padding: 4px 10px; font-size: 13px; }
-    .msg.ai .bubble th { background: #f0f5ff; }
-    .msg.ai .bubble code { background: #f5f5f5; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
-    .msg.ai .bubble pre { background: #f5f5f5; padding: 10px; border-radius: 6px; overflow-x: auto; }
-    .msg.ai .bubble pre code { background: none; padding: 0; }
-    .thinking { color: #999; }
+    .msg.ai .bubble th, .msg.ai .bubble td { border: 1px solid #eadfce; padding: 4px 10px; font-size: 13px; }
+    .msg.ai .bubble th { background: #fdf6ec; }
+    .msg.ai .bubble code { background: #f7efe0; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .msg.ai .bubble pre { background: #f7efe0; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    .thinking { color: var(--muted); }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .chip { font-size: 13px; padding: 6px 12px; border-radius: 999px; background: #fbf3e2; color: var(--primary-dark); border: 1px solid #ecd9bd; cursor: pointer; }
+    .chip:hover { background: #f5e7cb; }
+    .chat-input { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+    .chat-input input { flex: 1; padding: 11px 14px; border-radius: 999px; }
+    .attach-btn { width: 46px; height: 46px; border-radius: 50%; flex: none; background: #fbf3e2; border: 1.5px solid #e5c896; padding: 0; display: flex; align-items: center; justify-content: center; }
+    .attach-btn svg { width: 34px; height: 34px; display: block; }
+    .attach-btn:hover { background: #f5e7cb; }
+    .send-btn { border-radius: 999px; padding: 10px 22px; }
+
+    /* 数据集列表（我的页） */
+    .dataset-item { padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; cursor: pointer; background: #fff; transition: all .15s; }
+    .dataset-item:hover { border-color: var(--primary); }
+    .dataset-item.active { border-color: var(--primary); background: linear-gradient(180deg, #fdf6ec, #fff); }
+    .dataset-item .name-line { display: flex; justify-content: space-between; align-items: center; }
+    .dataset-item .fname { font-weight: 600; word-break: break-all; }
+    .ftag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #fdf3e0; color: #a86f14; border: 1px solid #f0d9a8; white-space: nowrap; margin-left: 8px; }
+    .dataset-item .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+
+    /* 表格 */
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.data-table th, table.data-table td { border-bottom: 1px solid var(--border); padding: 7px 10px; text-align: left; white-space: nowrap; }
+    table.data-table th { background: #fdf9f1; color: #6b5844; font-weight: 600; }
+    .table-scroll { overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+    .type-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+    .type-num { background: #fdf6ec; color: var(--primary-dark); border: 1px solid #e5c896; }
+    .type-txt { background: #eef5e2; color: #5b8c3e; border: 1px solid #cfe3b4; }
+    .miss-bar { display: inline-block; width: 70px; height: 6px; border-radius: 3px; background: #f3ead9; vertical-align: middle; margin-right: 6px; overflow: hidden; }
+    .miss-bar i { display: block; height: 100%; background: #e9a13b; }
 
     #chart { width: 100%; height: 420px; }
+
+    /* ---------- 报告 ---------- */
+    .kpi-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 6px; }
+    .kpi-card { flex: 1 1 150px; border-radius: 10px; padding: 14px 16px; background: linear-gradient(135deg, #fdf6ec, #fdf0d5); border: 1px solid #ecd9bd; position: relative; overflow: hidden; }
+    .kpi-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: linear-gradient(180deg, var(--primary), var(--honey)); }
+    .kpi-card .kname { font-size: 13px; color: #7a6a55; }
+    .kpi-card .kval { font-family: 'Fredoka', sans-serif; font-size: 24px; font-weight: bold; margin-top: 4px; background: linear-gradient(90deg, var(--primary-dark), var(--honey)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .report-chart { width: 100%; height: 360px; margin-top: 12px; }
+    .conclusion { line-height: 1.7; font-size: 14px; }
+    .conclusion > :first-child { margin-top: 0; }
+    .conclusion > :last-child { margin-bottom: 0; }
+
+    /* ---------- 我的 ---------- */
+    .profile { display: flex; gap: 16px; align-items: center; }
+    .profile .big-avatar { width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--honey)); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; flex: none; overflow: hidden; }
+    .profile .big-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile .big-avatar .emoji-face { font-size: 34px; }
+    .profile .pname { font-size: 18px; font-weight: 600; }
+    .profile .pmeta { color: var(--muted); font-size: 13px; margin-top: 3px; }
+    .danger { background: #fff; color: #ff4d4f; border: 1px solid #ff4d4f; }
+    .danger:hover { background: #fff1f0; }
+    .avatar-picker { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 4px; }
+    .avatar-opt { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; background: #fbf3e2; border: 2px solid var(--border); cursor: pointer; }
+    .avatar-opt.selected { border-color: var(--primary); background: #f5e7cb; }
+    .edit-label { display: block; font-size: 13px; color: #6b5844; margin: 10px 0 6px; }
+    .msg .avatar .emoji-face { font-size: 19px; }
+
+    @media print {
+        header, .dataset-bar, .tabbar, #view-chat, #view-charts, #view-me { display: none !important; }
+        #view-report { display: block !important; }
+        .wrap { padding: 0; }
+        #reportCard { box-shadow: none; border: none; }
+        body { background: #fff; }
+    }
 </style>
 </head>
 <body>
-<header>
-    <h1>InsightAgent 智能数据分析助手</h1>
-    <div class="user" id="userInfo">未登录</div>
-</header>
 
-<div class="wrap">
-
-    <!-- 登录 -->
-    <div class="card" id="loginCard">
-        <h2>登录</h2>
-        <div class="row">
-            <input id="phone" placeholder="手机号" style="width:180px">
-            <button id="btnCode">获取验证码</button>
-            <input id="code" placeholder="验证码（看后端控制台日志）" style="width:220px">
-            <button id="btnLogin">登录</button>
+<!-- ============ 登录页 ============ -->
+<div id="loginView">
+    <div class="login-card">
+        <div class="logo"><img class="bear-img" alt="轻松熊"></div>
+        <h1>InsightAgent</h1>
+        <div class="sub">智能数据分析助手 · 上传数据，对话出结论</div>
+        <label>手机号</label>
+        <input id="phone" placeholder="请输入手机号">
+        <label>验证码</label>
+        <div class="login-row">
+            <input id="code" placeholder="验证码（看后端控制台日志）">
+            <button id="btnCode" class="ghost">获取验证码</button>
         </div>
-        <p class="hint">验证码会打印在后端 IDEA 控制台日志里，复制过来填上即可。</p>
+        <button id="btnLogin" class="big">登 录</button>
+        <p class="hint" style="text-align:center;margin-top:14px">验证码会打印在后端 IDEA 控制台日志里</p>
+    </div>
+</div>
+
+<!-- ============ 应用 ============ -->
+<div id="appView" style="display:none">
+    <header>
+        <div class="brand">
+            <div class="logo"><img class="bear-img" alt="轻松熊"></div>
+            <h1>InsightAgent</h1>
+        </div>
+        <div class="user-chip" id="userInfo">未登录</div>
+    </header>
+
+    <div class="dataset-bar">
+        <span class="lbl">当前数据集</span>
+        <select id="datasetSelect"></select>
+        <button id="btnRefreshDs" class="ghost">刷新</button>
+        <span class="hint" id="dsHint"></span>
     </div>
 
-    <!-- 数据集 -->
-    <div class="card">
-        <h2>我的数据集</h2>
-        <div class="row" style="margin-bottom:12px">
-            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
-            <button id="btnUpload">上传数据集</button>
-            <button id="btnRefresh" style="background:#fff;color:#2f54eb;border:1px solid #2f54eb">刷新列表</button>
-        </div>
-        <div id="datasetList"><span class="hint">登录后自动加载。</span></div>
+    <div class="wrap">
+
+        <!-- 对话页 -->
+        <section class="view active" id="view-chat">
+            <div class="chips">
+                <span class="chip" data-q="这个数据集有多少行、多少列？哪一列缺失值最多？">📊 数据概况</span>
+                <span class="chip" data-q="按门店统计销售额总和，哪个门店最高？">🏆 门店排名</span>
+                <span class="chip" data-q="分析一下销售额随日期的趋势">📈 销售趋势</span>
+                <span class="chip" data-q="按品类统计销售额，各品类占比怎么样？">🥧 品类占比</span>
+            </div>
+            <div id="chatLog"></div>
+            <div class="chat-input">
+                <button class="attach-btn" id="btnAttach" title="附加文件上传"><svg viewBox="0 0 48 48"><circle cx="13" cy="10" r="6" fill="#c98d54"/><circle cx="13" cy="10" r="3" fill="#f2c94c"/><circle cx="33" cy="10" r="6" fill="#c98d54"/><circle cx="33" cy="10" r="3" fill="#f2c94c"/><circle cx="23" cy="25" r="15" fill="#e9c491"/><circle cx="17.5" cy="23" r="2" fill="#43301d"/><circle cx="28.5" cy="23" r="2" fill="#43301d"/><ellipse cx="23" cy="29" rx="5.4" ry="3.9" fill="#ffffff"/><path d="M23 27.2v1.7M23 28.9q-2.04 1.87 -4.25 0.935M23 28.9q2.04 1.87 4.25 0.935" stroke="#43301d" stroke-width="1.36" fill="none" stroke-linecap="round"/><circle cx="38" cy="37" r="8.5" fill="#d9a05b" stroke="#fffdf9" stroke-width="2.5"/><path d="M38 32.5v9M33.5 37h9" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+                <input type="file" id="chatFile" accept=".xlsx,.xls,.csv" hidden>
+                <input id="question" placeholder="输入问题，点左侧熊头可上传新数据集…">
+                <button id="btnAsk" class="send-btn">发送</button>
+            </div>
+        </section>
+
+        <!-- 图表页 -->
+        <section class="view" id="view-charts">
+            <div class="card">
+                <h2>生成图表</h2>
+                <div class="row" style="margin-bottom:12px">
+                    <select id="chartType">
+                        <option value="bar">柱状图</option>
+                        <option value="line">折线图</option>
+                        <option value="pie">饼图</option>
+                    </select>
+                    <select id="categoryColumn"><option value="">类目列</option></select>
+                    <select id="valueColumn"><option value="">数值列</option></select>
+                    <select id="agg">
+                        <option value="SUM">求和</option>
+                        <option value="AVG">平均</option>
+                        <option value="COUNT">计数</option>
+                        <option value="MAX">最大</option>
+                        <option value="MIN">最小</option>
+                    </select>
+                    <button id="btnChart">生成图表</button>
+                </div>
+                <div id="chart"></div>
+                <p class="hint">折线图时类目列选日期列；柱状图和饼图的类目列选门店、品类这类分组列。</p>
+            </div>
+        </section>
+
+        <!-- 报告页 -->
+        <section class="view" id="view-report">
+            <div class="card" id="reportCard">
+                <h2>分析报告</h2>
+                <div class="row" style="margin-bottom:12px">
+                    <button id="btnReport">生成报告</button>
+                    <button id="btnExportJson" class="ghost" disabled>下载 JSON</button>
+                    <button id="btnPrint" class="ghost" disabled>打印 / 存 PDF</button>
+                    <span class="hint" id="reportMeta"></span>
+                </div>
+                <div id="kpiRow" class="kpi-row"></div>
+                <div id="reportCharts"></div>
+                <div id="reportConclusion" class="conclusion"></div>
+            </div>
+        </section>
+
+        <!-- 我的页 -->
+        <section class="view" id="view-me">
+            <div class="card">
+                <div class="profile">
+                    <div class="big-avatar" id="meAvatar">?</div>
+                    <div>
+                        <div class="pname" id="meName">未登录</div>
+                        <div class="pmeta" id="meMeta"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>编辑资料</h2>
+                <span class="edit-label">昵称</span>
+                <input id="editNick" placeholder="输入昵称" style="width:100%">
+                <span class="edit-label">头像（选一个）</span>
+                <div class="avatar-picker" id="avatarPicker">
+                    <div class="avatar-opt" data-icon="" title="默认（昵称首字）">字</div>
+                    <div class="avatar-opt" data-icon="emoji:🐰">🐰</div>
+                    <div class="avatar-opt" data-icon="emoji:🐼">🐼</div>
+                    <div class="avatar-opt" data-icon="emoji:🐱">🐱</div>
+                    <div class="avatar-opt" data-icon="emoji:🦊">🦊</div>
+                    <div class="avatar-opt" data-icon="emoji:🐶">🐶</div>
+                    <div class="avatar-opt" data-icon="emoji:🐯">🐯</div>
+                    <div class="avatar-opt" data-icon="emoji:🐻">🐻</div>
+                </div>
+                <div class="row" style="margin-top:14px">
+                    <button id="btnSaveProfile">保存资料</button>
+                    <span class="hint" id="profileSaved"></span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2>我的数据集</h2>
+                    <button id="btnAnalyze" class="ghost">对当前数据集做 AI 一键分析</button>
+                </div>
+                <div class="row" style="margin-bottom:12px">
+                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="flex:1; min-width:160px">
+                    <button id="btnUpload">上传</button>
+                </div>
+                <div id="datasetList"><span class="hint">暂无数据。</span></div>
+            </div>
+
+            <div class="card">
+                <h2>当前数据集概况</h2>
+                <div id="overviewBox"><span class="hint">选中一个数据集，这里会显示每一列的类型、缺失和统计摘要。</span></div>
+                <h2 style="margin-top:20px">数据预览</h2>
+                <div id="previewBox"><span class="hint">选中数据集后预览前 10 行。</span></div>
+            </div>
+
+            <div class="card">
+                <h2>设置</h2>
+                <div class="row">
+                    <button id="btnLogout" class="danger">退出登录</button>
+                    <span class="hint">技术栈：Spring Boot + Spring AI + DeepSeek，统计由 Java 计算，模型只做解读。</span>
+                </div>
+            </div>
+        </section>
+
     </div>
 
-    <!-- 对话 -->
-    <div class="card">
-        <h2>对话提问</h2>
-        <div id="chatLog"></div>
-        <div class="row" style="margin-top:12px">
-            <input id="question" placeholder="先在上面选中一个数据集，再提问，例如：哪一列缺失值最多？" style="flex:1">
-            <button id="btnAsk">发送</button>
-        </div>
-    </div>
-
-    <!-- 图表 -->
-    <div class="card">
-        <h2>图表</h2>
-        <div class="row" style="margin-bottom:12px">
-            <select id="chartType">
-                <option value="bar">柱状图</option>
-                <option value="line">折线图</option>
-                <option value="pie">饼图</option>
-            </select>
-            <select id="categoryColumn"><option value="">类目列</option></select>
-            <select id="valueColumn"><option value="">数值列</option></select>
-            <select id="agg">
-                <option value="SUM">求和</option>
-                <option value="AVG">平均</option>
-                <option value="COUNT">计数</option>
-                <option value="MAX">最大</option>
-                <option value="MIN">最小</option>
-            </select>
-            <button id="btnChart">生成图表</button>
-        </div>
-        <div id="chart"></div>
-        <p class="hint">折线图时类目列选日期列；柱状图和饼图的类目列选门店、品类这类分组列。</p>
-    </div>
-
+    <!-- 底部导航 -->
+    <nav class="tabbar">
+        <div class="tab active" data-view="chat"><span class="icon"><svg viewBox="0 0 48 48"><circle cx="13" cy="8" r="5.5" fill="#c98d54"/><circle cx="13" cy="8" r="2.8" fill="#f2c94c"/><circle cx="35" cy="8" r="5.5" fill="#c98d54"/><circle cx="35" cy="8" r="2.8" fill="#f2c94c"/><path d="M14 10h20a6 6 0 0 1 6 6v14a6 6 0 0 1-6 6h-8l-8 6v-6h-4a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6z" fill="#fff7ea" stroke="#8a5a2b" stroke-width="2"/><circle cx="19" cy="21" r="2" fill="#43301d"/><circle cx="29" cy="21" r="2" fill="#43301d"/><ellipse cx="24" cy="27" rx="5" ry="3.6" fill="#ffffff" stroke="#e7d6b8"/><path d="M24 25.4v1.8M24 27.2q-2.16 1.9800000000000002 -4.5 0.9900000000000001M24 27.2q2.16 1.9800000000000002 4.5 0.9900000000000001" stroke="#43301d" stroke-width="1.4400000000000002" fill="none" stroke-linecap="round"/></svg></span><span>对话</span></div>
+        <div class="tab" data-view="charts"><span class="icon"><svg viewBox="0 0 48 48"><rect x="7" y="25" width="7" height="13" rx="2.5" fill="#d9a05b"/><rect x="34" y="20" width="7" height="18" rx="2.5" fill="#d9a05b"/><circle cx="19.5" cy="10" r="3.6" fill="#c98d54"/><circle cx="19.5" cy="10" r="1.8" fill="#f2c94c"/><circle cx="28.5" cy="10" r="3.6" fill="#c98d54"/><circle cx="28.5" cy="10" r="1.8" fill="#f2c94c"/><rect x="17" y="11" width="14" height="27" rx="6" fill="#b07a45"/><circle cx="21.5" cy="19" r="1.6" fill="#fff7ea"/><circle cx="26.5" cy="19" r="1.6" fill="#fff7ea"/><ellipse cx="24" cy="23.5" rx="3.4" ry="2.4" fill="#fff7ea"/><path d="M24 22.4v1.2M24 23.599999999999998q-1.44 1.32 -3.0 0.66M24 23.599999999999998q1.44 1.32 3.0 0.66" stroke="#43301d" stroke-width="0.96" fill="none" stroke-linecap="round"/><rect x="5" y="39.5" width="38" height="2.6" rx="1.3" fill="#8a5a2b" opacity=".45"/></svg></span><span>生成图表</span></div>
+        <div class="tab" data-view="report"><span class="icon"><svg viewBox="0 0 48 48"><circle cx="14" cy="9" r="5.5" fill="#c98d54"/><circle cx="14" cy="9" r="2.8" fill="#f2c94c"/><circle cx="34" cy="9" r="5.5" fill="#c98d54"/><circle cx="34" cy="9" r="2.8" fill="#f2c94c"/><rect x="11" y="10" width="26" height="32" rx="4" fill="#fffdf7" stroke="#8a5a2b" stroke-width="2"/><circle cx="20" cy="18.5" r="1.8" fill="#43301d"/><circle cx="28" cy="18.5" r="1.8" fill="#43301d"/><ellipse cx="24" cy="22.5" rx="4" ry="2.8" fill="#ffffff" stroke="#e7d6b8"/><path d="M24 21.2v1.4M24 22.599999999999998q-1.68 1.54 -3.5 0.77M24 22.599999999999998q1.68 1.54 3.5 0.77" stroke="#43301d" stroke-width="1.1199999999999999" fill="none" stroke-linecap="round"/><rect x="16.5" y="29" width="15" height="2.6" rx="1.3" fill="#e5c896"/><rect x="16.5" y="34.5" width="10" height="2.6" rx="1.3" fill="#ecd9bd"/></svg></span><span>分析报告</span></div>
+        <div class="tab" data-view="me"><span class="icon"><svg viewBox="0 0 48 48"><ellipse cx="15" cy="43.5" rx="4.4" ry="2.8" fill="#c98d54"/><ellipse cx="15" cy="43.5" rx="2.2" ry="1.4" fill="#f2c94c"/><ellipse cx="33" cy="43.5" rx="4.4" ry="2.8" fill="#c98d54"/><ellipse cx="33" cy="43.5" rx="2.2" ry="1.4" fill="#f2c94c"/><ellipse cx="11.5" cy="33" rx="3.2" ry="5" fill="#c98d54" transform="rotate(18 11.5 33)"/><ellipse cx="36.5" cy="33" rx="3.2" ry="5" fill="#c98d54" transform="rotate(-18 36.5 33)"/><ellipse cx="24" cy="35" rx="11" ry="9.5" fill="#d69c5f"/><ellipse cx="24" cy="37" rx="6.4" ry="5.6" fill="#fff7ea"/><circle cx="13.5" cy="8.5" r="5.5" fill="#c98d54"/><circle cx="13.5" cy="8.5" r="2.8" fill="#f2c94c"/><circle cx="34.5" cy="8.5" r="5.5" fill="#c98d54"/><circle cx="34.5" cy="8.5" r="2.8" fill="#f2c94c"/><ellipse cx="24" cy="17" rx="13" ry="10.5" fill="#d69c5f"/><circle cx="18.8" cy="15.5" r="1.9" fill="#43301d"/><circle cx="29.2" cy="15.5" r="1.9" fill="#43301d"/><ellipse cx="24" cy="20" rx="4.8" ry="3.4" fill="#ffffff"/><path d="M24 18.4v1.8M24 20.2q-2.16 1.9800000000000002 -4.5 0.9900000000000001M24 20.2q2.16 1.9800000000000002 4.5 0.9900000000000001" stroke="#43301d" stroke-width="1.4400000000000002" fill="none" stroke-linecap="round"/></svg></span><span>我</span></div>
+    </nav>
 </div>
 
 <script>
+const BEAR_IMG = 'data:image/jpeg;base64,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';
 let token = localStorage.getItem('ia_token') || '';
 let currentDatasetId = null;
+let currentDatasetName = '';
+let datasetsCache = [];
 let chart = null;
+let reportChartInstances = [];
+let currentUser = { name: '', icon: '' };
+let selectedIcon = '';
 
 function headers(json) {
     const h = {};
@@ -142,6 +387,30 @@ function checkResult(r) {
     if (!r.success) throw new Error(r.errorMsg || '请求失败');
     return r.data;
 }
+
+function normalizeMd(t) {
+    return t
+        .replace(/^(\s*)(#{1,6})(?=\S)/gm, '$1$2 ')
+        .replace(/^(\s*)([-*+])(?=[^\s\d])/gm, '$1$2 ')
+        .replace(/^(\s*)(\d{1,2})\.(?=\S)/gm, '$1$2. ');
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ---------- 页面切换 ---------- */
+function switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.getAttribute('data-view') === name));
+    if (name === 'charts' && chart) setTimeout(() => chart.resize(), 50);
+    if (name === 'report') setTimeout(() => reportChartInstances.forEach(c => c.resize()), 50);
+    window.scrollTo(0, 0);
+}
+document.querySelectorAll('.tab').forEach(t => {
+    t.onclick = () => switchView(t.getAttribute('data-view'));
+});
 
 /* ---------- 登录 ---------- */
 document.getElementById('btnCode').onclick = async () => {
@@ -167,57 +436,171 @@ document.getElementById('btnLogin').onclick = async () => {
         const data = checkResult(r);
         token = (typeof data === 'string') ? data : data.token;
         localStorage.setItem('ia_token', token);
-        await loadMe();
-        await loadDatasets();
+        await enterApp();
     } catch (e) { alert(e.message); }
 };
+
+async function enterApp() {
+    await loadMe();
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+    await loadDatasets();
+    if (currentDatasetId) {
+        addAiNotice('你好，我是兜兜。当前数据集是《' + currentDatasetName + '》，直接提问就行，也可以点 📎 上传新文件。');
+    } else {
+        addAiNotice('你好，我是兜兜。先点熊头按钮上传一个 Excel 或 CSV 文件，就可以开始提问了。');
+    }
+}
 
 async function loadMe() {
     const r = await api('/user/me', { headers: headers(false) });
     const me = checkResult(r);
-    document.getElementById('userInfo').textContent = '你好，' + (me.nickName || me.phone || '');
-    document.getElementById('loginCard').style.display = 'none';
+    const name = me.nickName || me.phone || '用户';
+    currentUser = { name: name, icon: me.icon || localStorage.getItem('ia_icon') || '' };
+    document.getElementById('userInfo').textContent = '👤 ' + name;
+    document.getElementById('meName').textContent = name;
+    applyUserAvatar();
+    document.getElementById('editNick').value = me.nickName || '';
+    initAvatarPicker(currentUser.icon);
+    let meta = '';
+    if (me.phone) meta += '手机号：' + me.phone;
+    if (me.id !== undefined) meta += (meta ? ' ｜ ' : '') + '用户 ID：' + me.id;
+    document.getElementById('meMeta').textContent = meta;
 }
+
+document.getElementById('btnLogout').onclick = () => {
+    localStorage.removeItem('ia_token');
+    token = '';
+    location.reload();
+};
+
+/* ---------- 个人资料 ---------- */
+function avatarContentHtml() {
+    if (currentUser.icon && currentUser.icon.startsWith('emoji:')) {
+        return '<span class="emoji-face">' + currentUser.icon.slice(6) + '</span>';
+    }
+    return escapeHtml((currentUser.name || '我').slice(0, 1));
+}
+
+function applyUserAvatar() {
+    document.getElementById('meAvatar').innerHTML = avatarContentHtml();
+    document.querySelectorAll('.msg.me .avatar').forEach(a => { a.innerHTML = avatarContentHtml(); });
+}
+
+function initAvatarPicker(icon) {
+    selectedIcon = icon || '';
+    document.querySelectorAll('#avatarPicker .avatar-opt').forEach(opt => {
+        opt.classList.toggle('selected', opt.getAttribute('data-icon') === selectedIcon);
+        opt.onclick = () => {
+            selectedIcon = opt.getAttribute('data-icon');
+            document.querySelectorAll('#avatarPicker .avatar-opt').forEach(o => o.classList.toggle('selected', o === opt));
+        };
+    });
+}
+
+document.getElementById('btnSaveProfile').onclick = async () => {
+    const nick = document.getElementById('editNick').value.trim();
+    try {
+        const r = await api('/user/profile', {
+            method: 'PUT',
+            headers: headers(true),
+            body: JSON.stringify({ nickName: nick, icon: selectedIcon })
+        });
+        checkResult(r);
+        if (nick) currentUser.name = nick;
+        currentUser.icon = selectedIcon;
+        localStorage.setItem('ia_icon', selectedIcon);
+        document.getElementById('userInfo').textContent = '👤 ' + currentUser.name;
+        document.getElementById('meName').textContent = currentUser.name;
+        applyUserAvatar();
+        document.getElementById('profileSaved').textContent = '已保存 ✓';
+    } catch (e) { alert(e.message); }
+};
 
 /* ---------- 数据集 ---------- */
 async function loadDatasets() {
     try {
         const r = await api('/dataset/list', { headers: headers(false) });
         const list = checkResult(r) || [];
+        datasetsCache = list;
+
+        const sel = document.getElementById('datasetSelect');
+        sel.innerHTML = '';
+        if (!list.length) sel.add(new Option('（暂无数据集，点熊头按钮或去“我的”上传）', ''));
+        list.forEach(d => sel.add(new Option(d.name || ('数据集 ' + d.id), d.id)));
+
         const box = document.getElementById('datasetList');
         box.innerHTML = '';
-        if (!list.length) { box.innerHTML = '<span class="hint">还没有数据集，先上传一个 Excel 或 CSV。</span>'; return; }
+        if (!list.length) { box.innerHTML = '<span class="hint">还没有数据集，先上传一个 Excel 或 CSV。</span>'; }
         list.forEach(d => {
             const div = document.createElement('div');
             div.className = 'dataset-item' + (d.id === currentDatasetId ? ' active' : '');
-            let meta = 'ID：' + d.id;
-            if (d.rowCount !== undefined && d.rowCount !== null) meta += ' ｜ 行数：' + d.rowCount;
-            if (d.createTime) meta += ' ｜ ' + String(d.createTime).replace('T', ' ');
-            const title = document.createElement('div');
-            title.textContent = d.name || ('数据集 ' + d.id);
-            const metaDiv = document.createElement('div');
-            metaDiv.className = 'meta';
-            metaDiv.textContent = meta;
-            div.appendChild(title);
-            div.appendChild(metaDiv);
-            div.onclick = () => selectDataset(d.id);
+            const nameLine = document.createElement('div');
+            nameLine.className = 'name-line';
+            const fname = document.createElement('span');
+            fname.className = 'fname';
+            fname.textContent = d.name || ('数据集 ' + d.id);
+            nameLine.appendChild(fname);
+            if (d.fileType) {
+                const tag = document.createElement('span');
+                tag.className = 'ftag';
+                tag.textContent = d.fileType.toUpperCase();
+                nameLine.appendChild(tag);
+            }
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            let m = 'ID：' + d.id;
+            if (d.rowCount !== undefined && d.rowCount !== null) m += ' ｜ ' + d.rowCount + ' 行';
+            if (d.colCount !== undefined && d.colCount !== null) m += ' ｜ ' + d.colCount + ' 列';
+            if (d.createTime) m += ' ｜ ' + String(d.createTime).replace('T', ' ');
+            meta.textContent = m;
+            div.appendChild(nameLine);
+            div.appendChild(meta);
+            div.onclick = () => selectDataset(d.id, d.name);
             box.appendChild(div);
         });
+
+        if (currentDatasetId && list.some(d => d.id === currentDatasetId)) {
+            sel.value = String(currentDatasetId);
+        } else if (list.length) {
+            await selectDataset(list[0].id, list[0].name);
+        } else {
+            currentDatasetId = null;
+            document.getElementById('dsHint').textContent = '';
+        }
     } catch (e) { /* 未登录时静默 */ }
 }
 
-async function selectDataset(id) {
+document.getElementById('datasetSelect').onchange = e => {
+    const id = Number(e.target.value);
+    if (!id) return;
+    const d = datasetsCache.find(x => x.id === id);
+    selectDataset(id, d ? d.name : '');
+};
+
+document.getElementById('btnRefreshDs').onclick = loadDatasets;
+
+async function selectDataset(id, name) {
     currentDatasetId = id;
-    await loadDatasets();
+    currentDatasetName = name || currentDatasetName;
+    document.getElementById('datasetSelect').value = String(id);
+    document.getElementById('dsHint').textContent = currentDatasetName;
+    // 刷新“我的”页列表高亮
+    document.querySelectorAll('#datasetList .dataset-item').forEach((el, i) => {
+        el.classList.toggle('active', datasetsCache[i] && datasetsCache[i].id === id);
+    });
     try {
         const r = await api('/dataset/' + id, { headers: headers(false) });
         const d = checkResult(r);
-        // 详情结构：data.columns 是现成的列名数组；兜底再读 data.dataset.columnsJson
         let cols = [];
+        let rows = [];
         if (d && Array.isArray(d.columns)) cols = d.columns;
         else if (d && d.dataset && d.dataset.columnsJson) cols = JSON.parse(d.dataset.columnsJson);
+        if (d && Array.isArray(d.rows)) rows = d.rows;
         fillColumnSelects(cols);
+        renderPreview(cols, rows);
     } catch (e) { alert(e.message); }
+    loadOverview(id);
 }
 
 function fillColumnSelects(cols) {
@@ -231,22 +614,75 @@ function fillColumnSelects(cols) {
     });
 }
 
-document.getElementById('btnRefresh').onclick = loadDatasets;
+async function uploadFile(file) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const r = await api('/dataset/upload', { method: 'POST', headers: headers(false), body: fd });
+    return checkResult(r); // 返回新数据集 ID
+}
 
 document.getElementById('btnUpload').onclick = async () => {
     const f = document.getElementById('fileInput').files[0];
     if (!f) return alert('先选文件');
-    const fd = new FormData();
-    fd.append('file', f);
     try {
-        const r = await api('/dataset/upload', { method: 'POST', headers: headers(false), body: fd });
-        checkResult(r);
-        alert('上传成功');
+        const newId = await uploadFile(f);
+        currentDatasetId = null;
         await loadDatasets();
+        if (newId) await selectDataset(newId, f.name);
+        alert('上传成功');
     } catch (e) { alert(e.message); }
 };
 
-/* ---------- 对话（气泡 + 流式 + Markdown 渲染） ---------- */
+/* ---------- 概况与预览 ---------- */
+async function loadOverview(id) {
+    const box = document.getElementById('overviewBox');
+    try {
+        const r = await api('/dataset/' + id + '/overview', { headers: headers(false) });
+        const ov = checkResult(r);
+        const cols = ov.columns || [];
+        let html = '<table class="data-table"><thead><tr><th>列名</th><th>类型</th><th>缺失</th><th>统计摘要</th></tr></thead><tbody>';
+        cols.forEach(c => {
+            const isNum = c.type === 'numeric';
+            const missRate = ov.rowCount ? Math.round((c.missing || 0) / ov.rowCount * 100) : 0;
+            let summary;
+            if (isNum) {
+                summary = '总和 ' + c.sum + ' ｜ 平均 ' + c.avg + ' ｜ 最大 ' + c.max + ' ｜ 最小 ' + c.min;
+            } else {
+                summary = (c.distinctCount || 0) + ' 个不同值';
+                if (c.topValues && c.topValues.length) {
+                    summary += ' ｜ 最多：' + c.topValues[0].value + '（' + c.topValues[0].count + ' 次）';
+                }
+            }
+            html += '<tr><td><b>' + escapeHtml(c.name) + '</b></td>' +
+                '<td><span class="type-tag ' + (isNum ? 'type-num">数值' : 'type-txt">文本') + '</span></td>' +
+                '<td><span class="miss-bar"><i style="width:' + missRate + '%"></i></span>' + (c.missing || 0) + '（' + missRate + '%）</td>' +
+                '<td>' + escapeHtml(summary) + '</td></tr>';
+        });
+        html += '</tbody></table>';
+        box.innerHTML = html;
+    } catch (e) {
+        box.innerHTML = '<span class="hint">概况加载失败：' + escapeHtml(e.message) + '</span>';
+    }
+}
+
+function renderPreview(cols, rows) {
+    const box = document.getElementById('previewBox');
+    if (!cols.length || !rows.length) { box.innerHTML = '<span class="hint">没有可预览的数据。</span>'; return; }
+    const show = rows.slice(0, 10);
+    let html = '<div class="table-scroll"><table class="data-table"><thead><tr>';
+    cols.forEach(c => { html += '<th>' + escapeHtml(c) + '</th>'; });
+    html += '</tr></thead><tbody>';
+    show.forEach(r => {
+        html += '<tr>';
+        cols.forEach(c => { html += '<td>' + escapeHtml(r[c] === null || r[c] === undefined ? '' : String(r[c])) + '</td>'; });
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    html += '<p class="hint" style="margin-top:8px">共 ' + rows.length + ' 行，仅预览前 ' + show.length + ' 行。</p>';
+    box.innerHTML = html;
+}
+
+/* ---------- 对话 ---------- */
 const chatLog = document.getElementById('chatLog');
 
 function scrollChat() { chatLog.scrollTop = chatLog.scrollHeight; }
@@ -254,7 +690,8 @@ function scrollChat() { chatLog.scrollTop = chatLog.scrollHeight; }
 function addUserMsg(text) {
     const div = document.createElement('div');
     div.className = 'msg me';
-    div.innerHTML = '<div class="name">我</div><div class="bubble"></div>';
+    div.innerHTML = '<div class="avatar">' + avatarContentHtml() + '</div><div class="col"><div class="name">我</div><div class="bubble"></div></div>';
+    div.querySelector('.name').textContent = currentUser.name || '我';
     div.querySelector('.bubble').textContent = text;
     chatLog.appendChild(div);
     scrollChat();
@@ -263,18 +700,15 @@ function addUserMsg(text) {
 function addAiMsg() {
     const div = document.createElement('div');
     div.className = 'msg ai';
-    div.innerHTML = '<div class="name">InsightAgent</div><div class="bubble"><span class="thinking">正在思考…</span></div>';
+    div.innerHTML = '<div class="avatar"><img src="' + BEAR_IMG + '" alt="轻松熊"></div><div class="col"><div class="name">兜兜</div><div class="bubble"><span class="thinking">正在思考…</span></div></div>';
     chatLog.appendChild(div);
     scrollChat();
     return div.querySelector('.bubble');
 }
 
-function normalizeMd(t) {
-    // 模型常写 ###标题、-条目、1.条目（# 和列表符号后面不带空格），标准 Markdown 解析器不认，先补上空格
-    return t
-        .replace(/^(\s*)(#{1,6})(?=\S)/gm, '$1$2 ')
-        .replace(/^(\s*)([-*+])(?=[^\s\d])/gm, '$1$2 ')
-        .replace(/^(\s*)(\d{1,2})\.(?=\S)/gm, '$1$2. ');
+function addAiNotice(text) {
+    const bubble = addAiMsg();
+    bubble.textContent = text;
 }
 
 function renderMarkdown(bubble, text) {
@@ -282,13 +716,9 @@ function renderMarkdown(bubble, text) {
     scrollChat();
 }
 
-async function ask() {
-    const input = document.getElementById('question');
-    const q = input.value.trim();
-    if (!q) return;
-    if (!currentDatasetId) return alert('先在上面选中一个数据集');
+async function askText(q) {
+    if (!currentDatasetId) return alert('先上传或选择一个数据集');
     addUserMsg(q);
-    input.value = '';
     const btn = document.getElementById('btnAsk');
     btn.disabled = true; btn.textContent = '生成中…';
     const bubble = addAiMsg();
@@ -307,7 +737,6 @@ async function ask() {
             const { done, value } = await reader.read();
             if (done) break;
             buffer += decoder.decode(value, { stream: true });
-            // SSE 事件以空行分隔，每个事件里取 data: 行拼回原文
             let idx;
             while ((idx = buffer.indexOf('\n\n')) >= 0) {
                 const rawEvent = buffer.slice(0, idx);
@@ -330,12 +759,59 @@ async function ask() {
         scrollChat();
     }
 }
+
+function ask() {
+    const input = document.getElementById('question');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    askText(q);
+}
 document.getElementById('btnAsk').onclick = ask;
 document.getElementById('question').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+document.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = () => askText(chip.getAttribute('data-q'));
+});
+
+/* 对话框附加文件上传 */
+document.getElementById('btnAttach').onclick = () => document.getElementById('chatFile').click();
+document.getElementById('chatFile').addEventListener('change', async e => {
+    const f = e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    addUserMsg('📎 上传文件：' + f.name);
+    const bubble = addAiMsg();
+    bubble.innerHTML = '<span class="thinking">正在上传并解析…</span>';
+    try {
+        const newId = await uploadFile(f);
+        currentDatasetId = null;
+        await loadDatasets();
+        if (newId) await selectDataset(newId, f.name);
+        bubble.textContent = '文件《' + f.name + '》上传成功，已设为当前数据集，直接提问就行。';
+    } catch (err) {
+        bubble.textContent = '上传失败：' + err.message;
+    }
+    scrollChat();
+});
+
+/* 一键分析（在“我的”页触发，结果展示到对话页） */
+document.getElementById('btnAnalyze').onclick = async () => {
+    if (!currentDatasetId) return alert('先选择一个数据集');
+    switchView('chat');
+    const bubble = addAiMsg();
+    try {
+        const r = await api('/analysis/' + currentDatasetId, { method: 'POST', headers: headers(false) });
+        const data = checkResult(r);
+        const text = (typeof data === 'string') ? data : (data.content || JSON.stringify(data));
+        renderMarkdown(bubble, text);
+    } catch (e) {
+        bubble.textContent = '分析失败：' + e.message;
+    }
+};
 
 /* ---------- 图表 ---------- */
 document.getElementById('btnChart').onclick = async () => {
-    if (!currentDatasetId) return alert('先在上面选中一个数据集');
+    if (!currentDatasetId) return alert('先选择一个数据集');
     const chartType = document.getElementById('chartType').value;
     const categoryColumn = document.getElementById('categoryColumn').value;
     const valueColumn = document.getElementById('valueColumn').value;
@@ -350,30 +826,112 @@ document.getElementById('btnChart').onclick = async () => {
     } catch (e) { alert(e.message); }
 };
 
-function renderChart(d, valueColumn, agg) {
-    if (!chart) chart = echarts.init(document.getElementById('chart'));
-    let option;
+function chartOption(d, seriesLabel) {
     if (d.chartType === 'pie') {
-        option = {
-            title: { text: valueColumn + '（' + agg + '）' },
+        return {
+            title: { text: seriesLabel },
             tooltip: { trigger: 'item' },
             series: [{ type: 'pie', radius: '60%', data: d.pieData }]
         };
-    } else {
-        option = {
-            title: { text: valueColumn + '（' + agg + '）' },
-            tooltip: { trigger: 'axis' },
-            xAxis: { type: 'category', data: d.categories, axisLabel: { interval: 0, rotate: 30 } },
-            yAxis: { type: 'value' },
-            series: [{ name: d.seriesName || valueColumn, type: d.chartType, data: d.seriesData, smooth: d.chartType === 'line' }]
-        };
     }
-    chart.setOption(option, true);
+    return {
+        title: { text: seriesLabel },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'category', data: d.categories, axisLabel: { interval: 0, rotate: 30 } },
+        yAxis: { type: 'value' },
+        series: [{
+            name: d.seriesName || seriesLabel, type: d.chartType, data: d.seriesData,
+            smooth: d.chartType === 'line',
+            itemStyle: { color: '#b07a45' },
+            areaStyle: d.chartType === 'line' ? { color: 'rgba(176,122,69,.16)' } : undefined
+        }]
+    };
 }
 
+function renderChart(d, valueColumn, agg) {
+    if (!chart) chart = echarts.init(document.getElementById('chart'));
+    chart.setOption(chartOption(d, valueColumn + '（' + agg + '）'), true);
+}
+
+/* ---------- 报告 ---------- */
+let lastReport = null;
+
+document.getElementById('btnReport').onclick = async () => {
+    if (!currentDatasetId) return alert('先选择一个数据集');
+    const btn = document.getElementById('btnReport');
+    btn.disabled = true; btn.textContent = '生成中…';
+    try {
+        const r = await api('/analysis/report/' + currentDatasetId, {
+            method: 'POST', headers: headers(false)
+        });
+        lastReport = checkResult(r);
+        renderReport(lastReport);
+        document.getElementById('btnExportJson').disabled = false;
+        document.getElementById('btnPrint').disabled = false;
+    } catch (e) {
+        alert(e.message);
+    } finally {
+        btn.disabled = false; btn.textContent = '生成报告';
+    }
+};
+
+function renderReport(rep) {
+    document.getElementById('reportMeta').textContent =
+        (rep.datasetName || '') + ' ｜ 生成于 ' + (rep.generatedAt || '');
+
+    const kpiRow = document.getElementById('kpiRow');
+    kpiRow.innerHTML = '';
+    (rep.kpis || []).forEach(k => {
+        const div = document.createElement('div');
+        div.className = 'kpi-card';
+        const name = document.createElement('div');
+        name.className = 'kname';
+        name.textContent = k.name;
+        const val = document.createElement('div');
+        val.className = 'kval';
+        val.textContent = k.value;
+        div.appendChild(name);
+        div.appendChild(val);
+        kpiRow.appendChild(div);
+    });
+
+    reportChartInstances.forEach(c => c.dispose());
+    reportChartInstances = [];
+    const chartsBox = document.getElementById('reportCharts');
+    chartsBox.innerHTML = '';
+    (rep.charts || []).forEach(item => {
+        const title = document.createElement('h3');
+        title.style.fontSize = '14px';
+        title.textContent = item.title;
+        chartsBox.appendChild(title);
+        const div = document.createElement('div');
+        div.className = 'report-chart';
+        chartsBox.appendChild(div);
+        const inst = echarts.init(div);
+        inst.setOption(chartOption(item.data, item.title), true);
+        reportChartInstances.push(inst);
+    });
+
+    document.getElementById('reportConclusion').innerHTML =
+        DOMPurify.sanitize(marked.parse(normalizeMd(rep.conclusion || '')));
+}
+
+document.getElementById('btnExportJson').onclick = () => {
+    if (!lastReport) return;
+    const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'insight-report-' + (lastReport.datasetId || '') + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+};
+
+document.getElementById('btnPrint').onclick = () => window.print();
+
 /* ---------- 初始化 ---------- */
+document.querySelectorAll('img.bear-img').forEach(i => { i.src = BEAR_IMG; });
 if (token) {
-    loadMe().then(loadDatasets).catch(() => { localStorage.removeItem('ia_token'); token = ''; });
+    enterApp().catch(() => { localStorage.removeItem('ia_token'); token = ''; });
 }
 </script>
 </body>

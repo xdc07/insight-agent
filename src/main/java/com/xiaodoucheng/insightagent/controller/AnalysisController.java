@@ -41,6 +41,9 @@ public class AnalysisController {
     public Flux<String> chatStream(@PathVariable Long datasetId, @RequestParam String question) {
         return analysisService.chatStream(datasetId, question);
     }
-
+    @PostMapping("/report/{datasetId}")
+    public Result report(@PathVariable Long datasetId) {
+        return analysisService.report(datasetId);
+    }
 }
 

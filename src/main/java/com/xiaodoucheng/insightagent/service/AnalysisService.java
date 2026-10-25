@@ -16,6 +16,11 @@ import org.springframework.stereotype.Service;
 import com.xiaodoucheng.insightagent.tool.DatasetTools;
 import reactor.core.publisher.Flux;
 import com.xiaodoucheng.insightagent.utils.UserHolder;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
 
@@ -104,6 +109,92 @@ public class AnalysisService {
                 .toolContext(Map.of("userId", UserHolder.getUser().getId()))
                 .stream()
                 .content();
+    }
+    public Result report(Long datasetId) {
+        Result overviewResult = datasetService.overview(datasetId);
+        if (!Boolean.TRUE.equals(overviewResult.getSuccess())) {
+            return overviewResult;
+        }
+        Map<String, Object> ov = (Map<String, Object>) overviewResult.getData();
+        List<Map<String, Object>> cols = (List<Map<String, Object>>) ov.get("columns");
+
+        String numericCol = null;
+        String textCol = null;
+        String dateCol = null;
+        List<Map<String, Object>> numericCols = new ArrayList<>();
+        for (Map<String, Object> col : cols) {
+            String name = (String) col.get("name");
+            if ("numeric".equals(col.get("type"))) {
+                if (numericCol == null) {
+                    numericCol = name;
+                }
+                numericCols.add(col);
+            } else {
+                if (dateCol == null && (name.contains("日期") || name.contains("时间"))) {
+                    dateCol = name;
+                } else if (textCol == null) {
+                    textCol = name;
+                }
+            }
+        }
+
+        List<Map<String, Object>> kpis = new ArrayList<>();
+        kpis.add(kpi("总行数", ov.get("rowCount")));
+        kpis.add(kpi("总列数", ov.get("colCount")));
+        for (int i = 0; i < Math.min(2, numericCols.size()); i++) {
+            Map<String, Object> col = numericCols.get(i);
+            kpis.add(kpi(col.get("name") + "总和", col.get("sum")));
+            kpis.add(kpi(col.get("name") + "平均", col.get("avg")));
+        }
+
+        List<Map<String, Object>> charts = new ArrayList<>();
+        if (textCol != null && numericCol != null) {
+            Result bar = datasetService.chartData(datasetId, "bar", textCol, numericCol, "SUM");
+            if (Boolean.TRUE.equals(bar.getSuccess())) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("title", "各" + textCol + "的" + numericCol + "总和");
+                item.put("data", bar.getData());
+                charts.add(item);
+            }
+        }
+        if (dateCol != null && numericCol != null) {
+            Result line = datasetService.chartData(datasetId, "line", dateCol, numericCol, "SUM");
+            if (Boolean.TRUE.equals(line.getSuccess())) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("title", numericCol + "随" + dateCol + "的趋势");
+                item.put("data", line.getData());
+                charts.add(item);
+            }
+        }
+
+        String conclusion;
+        try {
+            String statsJson = objectMapper.writeValueAsString(ov);
+            conclusion = chatClient.prompt()
+                    .system("你是一名资深数据分析师。根据给定的数据集统计概况 JSON，写一段中文分析结论，200 字左右，包含两到三个核心发现和一条可执行建议。只输出正文，不要加标题，不许编造 JSON 里没有的数字。")
+                    .user(statsJson)
+                    .call()
+                    .content();
+        } catch (Exception e) {
+            conclusion = "结论生成失败，请稍后重试。";
+        }
+
+        Dataset dataset = datasetMapper.selectById(datasetId);
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("datasetId", datasetId);
+        report.put("datasetName", dataset == null ? "" : dataset.getName());
+        report.put("generatedAt", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        report.put("kpis", kpis);
+        report.put("charts", charts);
+        report.put("conclusion", conclusion);
+        return Result.ok(report);
+    }
+
+    private Map<String, Object> kpi(String name, Object value) {
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("name", name);
+        item.put("value", value);
+        return item;
     }
 }
 

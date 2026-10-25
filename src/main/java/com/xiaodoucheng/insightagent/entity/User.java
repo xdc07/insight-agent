@@ -15,4 +15,5 @@ public class User {
     private String phone;
     private String nickName;
     private LocalDateTime createTime;
+    private String icon;
 }

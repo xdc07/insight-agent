@@ -6,6 +6,8 @@ import com.xiaodoucheng.insightagent.service.UserService;
 import com.xiaodoucheng.insightagent.utils.UserHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -28,6 +30,11 @@ public class UserController {
     @GetMapping("/me")
     public Result me() {
         return Result.ok(UserHolder.getUser());
+    }
+    @PutMapping("/profile")
+    public Result updateProfile(@RequestBody Map<String, String> body,
+                                @RequestHeader("authorization") String token) {
+        return userService.updateProfile(body.get("nickName"), body.get("icon"), token);
     }
 
 }
