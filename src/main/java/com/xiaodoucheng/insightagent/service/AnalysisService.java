@@ -14,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import com.xiaodoucheng.insightagent.tool.DatasetTools;
+import reactor.core.publisher.Flux;
+import com.xiaodoucheng.insightagent.utils.UserHolder;
+import java.util.Map;
 import java.util.List;
 
 @Slf4j
@@ -86,7 +89,20 @@ public class AnalysisService {
                 .system("你是一名数据分析助手。回答涉及具体数字时，必须调用工具获取真实统计，不许编造。当前数据集ID是：" + datasetId)
                 .user(question)
                 .tools(datasetTools)
+                .toolContext(Map.of("userId", UserHolder.getUser().getId()))
                 .call()
+                .content();
+    }
+    public Result chartData(Long datasetId, String chartType, String categoryColumn, String valueColumn, String agg) {
+        return datasetService.chartData(datasetId, chartType, categoryColumn, valueColumn, agg);
+    }
+    public Flux<String> chatStream(Long datasetId, String question) {
+        return chatClient.prompt()
+                .system("你是一名数据分析助手。回答涉及具体数字时，必须调用工具获取真实统计，不许编造。当前数据集ID是：" + datasetId)
+                .user(question)
+                .tools(datasetTools)
+                .toolContext(Map.of("userId", UserHolder.getUser().getId()))
+                .stream()
                 .content();
     }
 }

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InsightAgent 智能数据分析助手</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+<style>
+    * { box-sizing: border-box; }
+    body { font-family: "Microsoft YaHei", Arial, sans-serif; margin: 0; background: #f5f6fa; color: #222; }
+    header { background: #2f54eb; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 20px; margin: 0; }
+    header .user { font-size: 14px; }
+    .wrap { max-width: 1080px; margin: 20px auto; padding: 0 16px; }
+    .card { background: #fff; border-radius: 8px; padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card h2 { font-size: 16px; margin: 0 0 12px; }
+    input, select, button { font-size: 14px; padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 6px; }
+    button { background: #2f54eb; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #1d39c4; }
+    button:disabled { background: #a6a6a6; cursor: not-allowed; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .dataset-item { padding: 10px 12px; border: 1px solid #e8e8e8; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
+    .dataset-item:hover { border-color: #2f54eb; }
+    .dataset-item.active { border-color: #2f54eb; background: #f0f5ff; }
+    .dataset-item .meta { color: #888; font-size: 12px; margin-top: 2px; }
+    .hint { color: #888; font-size: 13px; }
+
+    /* ---------- 对话气泡 ---------- */
+    #chatLog { height: 380px; overflow-y: auto; border: 1px solid #eee; border-radius: 8px; padding: 16px; background: #f7f8fa; display: flex; flex-direction: column; gap: 14px; }
+    .msg { display: flex; flex-direction: column; max-width: 78%; }
+    .msg .name { font-size: 12px; color: #999; margin-bottom: 4px; }
+    .msg .bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.65; font-size: 14px; word-break: break-word; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+    .msg.me { align-self: flex-end; align-items: flex-end; }
+    .msg.me .bubble { background: #2f54eb; color: #fff; border-bottom-right-radius: 4px; white-space: pre-wrap; }
+    .msg.ai { align-self: flex-start; align-items: flex-start; }
+    .msg.ai .bubble { background: #fff; border: 1px solid #e8e8e8; border-bottom-left-radius: 4px; }
+    .msg.ai .bubble > :first-child { margin-top: 0; }
+    .msg.ai .bubble > :last-child { margin-bottom: 0; }
+    .msg.ai .bubble table { border-collapse: collapse; margin: 8px 0; }
+    .msg.ai .bubble th, .msg.ai .bubble td { border: 1px solid #ddd; padding: 4px 10px; font-size: 13px; }
+    .msg.ai .bubble th { background: #f0f5ff; }
+    .msg.ai .bubble code { background: #f5f5f5; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+    .msg.ai .bubble pre { background: #f5f5f5; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    .msg.ai .bubble pre code { background: none; padding: 0; }
+    .thinking { color: #999; }
+
+    #chart { width: 100%; height: 420px; }
+</style>
+</head>
+<body>
+<header>
+    <h1>InsightAgent 智能数据分析助手</h1>
+    <div class="user" id="userInfo">未登录</div>
+</header>
+
+<div class="wrap">
+
+    <!-- 登录 -->
+    <div class="card" id="loginCard">
+        <h2>登录</h2>
+        <div class="row">
+            <input id="phone" placeholder="手机号" style="width:180px">
+            <button id="btnCode">获取验证码</button>
+            <input id="code" placeholder="验证码（看后端控制台日志）" style="width:220px">
+            <button id="btnLogin">登录</button>
+        </div>
+        <p class="hint">验证码会打印在后端 IDEA 控制台日志里，复制过来填上即可。</p>
+    </div>
+
+    <!-- 数据集 -->
+    <div class="card">
+        <h2>我的数据集</h2>
+        <div class="row" style="margin-bottom:12px">
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
+            <button id="btnUpload">上传数据集</button>
+            <button id="btnRefresh" style="background:#fff;color:#2f54eb;border:1px solid #2f54eb">刷新列表</button>
+        </div>
+        <div id="datasetList"><span class="hint">登录后自动加载。</span></div>
+    </div>
+
+    <!-- 对话 -->
+    <div class="card">
+        <h2>对话提问</h2>
+        <div id="chatLog"></div>
+        <div class="row" style="margin-top:12px">
+            <input id="question" placeholder="先在上面选中一个数据集，再提问，例如：哪一列缺失值最多？" style="flex:1">
+            <button id="btnAsk">发送</button>
+        </div>
+    </div>
+
+    <!-- 图表 -->
+    <div class="card">
+        <h2>图表</h2>
+        <div class="row" style="margin-bottom:12px">
+            <select id="chartType">
+                <option value="bar">柱状图</option>
+                <option value="line">折线图</option>
+                <option value="pie">饼图</option>
+            </select>
+            <select id="categoryColumn"><option value="">类目列</option></select>
+            <select id="valueColumn"><option value="">数值列</option></select>
+            <select id="agg">
+                <option value="SUM">求和</option>
+                <option value="AVG">平均</option>
+                <option value="COUNT">计数</option>
+                <option value="MAX">最大</option>
+                <option value="MIN">最小</option>
+            </select>
+            <button id="btnChart">生成图表</button>
+        </div>
+        <div id="chart"></div>
+        <p class="hint">折线图时类目列选日期列；柱状图和饼图的类目列选门店、品类这类分组列。</p>
+    </div>
+
+</div>
+
+<script>
+let token = localStorage.getItem('ia_token') || '';
+let currentDatasetId = null;
+let chart = null;
+
+function headers(json) {
+    const h = {};
+    if (token) h['authorization'] = token;
+    if (json) h['Content-Type'] = 'application/json';
+    return h;
+}
+
+async function api(path, options) {
+    const res = await fetch(path, options || {});
+    if (res.status === 401) {
+        alert('登录已失效，请重新登录');
+        throw new Error('401');
+    }
+    const text = await res.text();
+    try { return JSON.parse(text); } catch (e) { throw new Error('响应不是 JSON：' + text.slice(0, 100)); }
+}
+
+function checkResult(r) {
+    if (!r.success) throw new Error(r.errorMsg || '请求失败');
+    return r.data;
+}
+
+/* ---------- 登录 ---------- */
+document.getElementById('btnCode').onclick = async () => {
+    const phone = document.getElementById('phone').value.trim();
+    if (!phone) return alert('先填手机号');
+    try {
+        const r = await api('/user/code?phone=' + encodeURIComponent(phone), { method: 'POST' });
+        checkResult(r);
+        alert('验证码已发送，去后端控制台日志里看');
+    } catch (e) { alert(e.message); }
+};
+
+document.getElementById('btnLogin').onclick = async () => {
+    const phone = document.getElementById('phone').value.trim();
+    const code = document.getElementById('code').value.trim();
+    if (!phone || !code) return alert('手机号和验证码都要填');
+    try {
+        const r = await api('/user/login', {
+            method: 'POST',
+            headers: headers(true),
+            body: JSON.stringify({ phone: phone, code: code })
+        });
+        const data = checkResult(r);
+        token = (typeof data === 'string') ? data : data.token;
+        localStorage.setItem('ia_token', token);
+        await loadMe();
+        await loadDatasets();
+    } catch (e) { alert(e.message); }
+};
+
+async function loadMe() {
+    const r = await api('/user/me', { headers: headers(false) });
+    const me = checkResult(r);
+    document.getElementById('userInfo').textContent = '你好，' + (me.nickName || me.phone || '');
+    document.getElementById('loginCard').style.display = 'none';
+}
+
+/* ---------- 数据集 ---------- */
+async function loadDatasets() {
+    try {
+        const r = await api('/dataset/list', { headers: headers(false) });
+        const list = checkResult(r) || [];
+        const box = document.getElementById('datasetList');
+        box.innerHTML = '';
+        if (!list.length) { box.innerHTML = '<span class="hint">还没有数据集，先上传一个 Excel 或 CSV。</span>'; return; }
+        list.forEach(d => {
+            const div = document.createElement('div');
+            div.className = 'dataset-item' + (d.id === currentDatasetId ? ' active' : '');
+            let meta = 'ID：' + d.id;
+            if (d.rowCount !== undefined && d.rowCount !== null) meta += ' ｜ 行数：' + d.rowCount;
+            if (d.createTime) meta += ' ｜ ' + String(d.createTime).replace('T', ' ');
+            const title = document.createElement('div');
+            title.textContent = d.name || ('数据集 ' + d.id);
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meta';
+            metaDiv.textContent = meta;
+            div.appendChild(title);
+            div.appendChild(metaDiv);
+            div.onclick = () => selectDataset(d.id);
+            box.appendChild(div);
+        });
+    } catch (e) { /* 未登录时静默 */ }
+}
+
+async function selectDataset(id) {
+    currentDatasetId = id;
+    await loadDatasets();
+    try {
+        const r = await api('/dataset/' + id, { headers: headers(false) });
+        const d = checkResult(r);
+        // 详情结构：data.columns 是现成的列名数组；兜底再读 data.dataset.columnsJson
+        let cols = [];
+        if (d && Array.isArray(d.columns)) cols = d.columns;
+        else if (d && d.dataset && d.dataset.columnsJson) cols = JSON.parse(d.dataset.columnsJson);
+        fillColumnSelects(cols);
+    } catch (e) { alert(e.message); }
+}
+
+function fillColumnSelects(cols) {
+    const cat = document.getElementById('categoryColumn');
+    const val = document.getElementById('valueColumn');
+    cat.innerHTML = '<option value="">类目列</option>';
+    val.innerHTML = '<option value="">数值列</option>';
+    cols.forEach(c => {
+        cat.add(new Option(c, c));
+        val.add(new Option(c, c));
+    });
+}
+
+document.getElementById('btnRefresh').onclick = loadDatasets;
+
+document.getElementById('btnUpload').onclick = async () => {
+    const f = document.getElementById('fileInput').files[0];
+    if (!f) return alert('先选文件');
+    const fd = new FormData();
+    fd.append('file', f);
+    try {
+        const r = await api('/dataset/upload', { method: 'POST', headers: headers(false), body: fd });
+        checkResult(r);
+        alert('上传成功');
+        await loadDatasets();
+    } catch (e) { alert(e.message); }
+};
+
+/* ---------- 对话（气泡 + 流式 + Markdown 渲染） ---------- */
+const chatLog = document.getElementById('chatLog');
+
+function scrollChat() { chatLog.scrollTop = chatLog.scrollHeight; }
+
+function addUserMsg(text) {
+    const div = document.createElement('div');
+    div.className = 'msg me';
+    div.innerHTML = '<div class="name">我</div><div class="bubble"></div>';
+    div.querySelector('.bubble').textContent = text;
+    chatLog.appendChild(div);
+    scrollChat();
+}
+
+function addAiMsg() {
+    const div = document.createElement('div');
+    div.className = 'msg ai';
+    div.innerHTML = '<div class="name">InsightAgent</div><div class="bubble"><span class="thinking">正在思考…</span></div>';
+    chatLog.appendChild(div);
+    scrollChat();
+    return div.querySelector('.bubble');
+}
+
+function normalizeMd(t) {
+    // 模型常写 ###标题、-条目、1.条目（# 和列表符号后面不带空格），标准 Markdown 解析器不认，先补上空格
+    return t
+        .replace(/^(\s*)(#{1,6})(?=\S)/gm, '$1$2 ')
+        .replace(/^(\s*)([-*+])(?=[^\s\d])/gm, '$1$2 ')
+        .replace(/^(\s*)(\d{1,2})\.(?=\S)/gm, '$1$2. ');
+}
+
+function renderMarkdown(bubble, text) {
+    bubble.innerHTML = DOMPurify.sanitize(marked.parse(normalizeMd(text)));
+    scrollChat();
+}
+
+async function ask() {
+    const input = document.getElementById('question');
+    const q = input.value.trim();
+    if (!q) return;
+    if (!currentDatasetId) return alert('先在上面选中一个数据集');
+    addUserMsg(q);
+    input.value = '';
+    const btn = document.getElementById('btnAsk');
+    btn.disabled = true; btn.textContent = '生成中…';
+    const bubble = addAiMsg();
+    let full = '';
+    try {
+        const res = await fetch('/analysis/chat/stream/' + currentDatasetId + '?question=' + encodeURIComponent(q), {
+            method: 'POST',
+            headers: headers(false)
+        });
+        if (res.status === 401) throw new Error('登录已失效，请重新登录');
+        if (!res.ok) throw new Error('请求失败：' + res.status);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            // SSE 事件以空行分隔，每个事件里取 data: 行拼回原文
+            let idx;
+            while ((idx = buffer.indexOf('\n\n')) >= 0) {
+                const rawEvent = buffer.slice(0, idx);
+                buffer = buffer.slice(idx + 2);
+                const dataText = rawEvent.split('\n')
+                    .filter(l => l.startsWith('data:'))
+                    .map(l => l.slice(5).replace(/^ /, '').replace(/\r$/, ''))
+                    .join('\n');
+                if (dataText) {
+                    full += dataText;
+                    renderMarkdown(bubble, full);
+                }
+            }
+        }
+        if (!full) bubble.innerHTML = '<span class="thinking">（没有返回内容）</span>';
+    } catch (e) {
+        bubble.textContent = '出错了：' + e.message;
+    } finally {
+        btn.disabled = false; btn.textContent = '发送';
+        scrollChat();
+    }
+}
+document.getElementById('btnAsk').onclick = ask;
+document.getElementById('question').addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+
+/* ---------- 图表 ---------- */
+document.getElementById('btnChart').onclick = async () => {
+    if (!currentDatasetId) return alert('先在上面选中一个数据集');
+    const chartType = document.getElementById('chartType').value;
+    const categoryColumn = document.getElementById('categoryColumn').value;
+    const valueColumn = document.getElementById('valueColumn').value;
+    const agg = document.getElementById('agg').value;
+    if (!categoryColumn || !valueColumn) return alert('类目列和数值列都要选');
+    const params = new URLSearchParams({ chartType, categoryColumn, valueColumn, agg });
+    try {
+        const r = await api('/analysis/chart/' + currentDatasetId + '?' + params.toString(), {
+            method: 'POST', headers: headers(false)
+        });
+        renderChart(checkResult(r), valueColumn, agg);
+    } catch (e) { alert(e.message); }
+};
+
+function renderChart(d, valueColumn, agg) {
+    if (!chart) chart = echarts.init(document.getElementById('chart'));
+    let option;
+    if (d.chartType === 'pie') {
+        option = {
+            title: { text: valueColumn + '（' + agg + '）' },
+            tooltip: { trigger: 'item' },
+            series: [{ type: 'pie', radius: '60%', data: d.pieData }]
+        };
+    } else {
+        option = {
+            title: { text: valueColumn + '（' + agg + '）' },
+            tooltip: { trigger: 'axis' },
+            xAxis: { type: 'category', data: d.categories, axisLabel: { interval: 0, rotate: 30 } },
+            yAxis: { type: 'value' },
+            series: [{ name: d.seriesName || valueColumn, type: d.chartType, data: d.seriesData, smooth: d.chartType === 'line' }]
+        };
+    }
+    chart.setOption(option, true);
+}
+
+/* ---------- 初始化 ---------- */
+if (token) {
+    loadMe().then(loadDatasets).catch(() => { localStorage.removeItem('ia_token'); token = ''; });
+}
+</script>
+</body>
+</html>

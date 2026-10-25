@@ -22,7 +22,7 @@ public class MvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .order(0);
         registry.addInterceptor(new LoginInterceptor())
-                .excludePathPatterns("/user/code", "/user/login", "/doc.html", "/webjars/**", "/v3/**", "/favicon.ico")
+                .excludePathPatterns("/user/code", "/user/login", "/doc.html", "/", "/index.html", "/webjars/**", "/v3/**", "/favicon.ico")
                 .order(1);
     }
 }
