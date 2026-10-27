@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 import com.xiaodoucheng.insightagent.tool.DatasetTools;
 import reactor.core.publisher.Flux;
 import com.xiaodoucheng.insightagent.utils.UserHolder;
-
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.ChatMemory;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -34,15 +35,16 @@ public class AnalysisService {
     private final ChatClient chatClient;
     private final DatasetTools datasetTools;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final MessageChatMemoryAdvisor memoryAdvisor;
     public AnalysisService(DatasetService datasetService, DatasetMapper datasetMapper,
                            AnalysisRecordMapper analysisRecordMapper,
-                           ChatClient.Builder chatClientBuilder, DatasetTools datasetTools) {
+                           ChatClient.Builder chatClientBuilder, DatasetTools datasetTools,ChatMemory chatMemory) {
         this.datasetService = datasetService;
         this.datasetMapper = datasetMapper;
         this.analysisRecordMapper = analysisRecordMapper;
         this.chatClient = chatClientBuilder.build();
         this.datasetTools = datasetTools;
+        this.memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
     }
 
     public Result analyze(Long datasetId) {
@@ -93,6 +95,8 @@ public class AnalysisService {
         return chatClient.prompt()
                 .system("你是一名数据分析助手。回答涉及具体数字时，必须调用工具获取真实统计，不许编造。当前数据集ID是：" + datasetId)
                 .user(question)
+                .advisors(memoryAdvisor)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, UserHolder.getUser().getId() + ":" + datasetId))
                 .tools(datasetTools)
                 .toolContext(Map.of("userId", UserHolder.getUser().getId()))
                 .call()
@@ -105,6 +109,8 @@ public class AnalysisService {
         return chatClient.prompt()
                 .system("你是一名数据分析助手。回答涉及具体数字时，必须调用工具获取真实统计，不许编造。当前数据集ID是：" + datasetId)
                 .user(question)
+                .advisors(memoryAdvisor)
+                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, UserHolder.getUser().getId() + ":" + datasetId))
                 .tools(datasetTools)
                 .toolContext(Map.of("userId", UserHolder.getUser().getId()))
                 .stream()
