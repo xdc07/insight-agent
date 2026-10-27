@@ -31,11 +31,12 @@ public class DatasetService {
     private final DatasetRowMapper datasetRowMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final StringRedisTemplate stringRedisTemplate;
-
-    public DatasetService(DatasetMapper datasetMapper, DatasetRowMapper datasetRowMapper, StringRedisTemplate stringRedisTemplate) {
+    private final DatasetParseService datasetParseService;
+    public DatasetService(DatasetMapper datasetMapper, DatasetRowMapper datasetRowMapper, StringRedisTemplate stringRedisTemplate,DatasetParseService datasetParseService) {
         this.datasetMapper = datasetMapper;
         this.datasetRowMapper = datasetRowMapper;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.datasetParseService = datasetParseService;
     }
 
     public Result upload(MultipartFile file) {
@@ -50,62 +51,23 @@ public class DatasetService {
         if (!List.of("xlsx", "xls", "csv").contains(fileType)) {
             return Result.fail("只支持 xlsx、xls、csv 文件");
         }
-
-        List<String> columns = new ArrayList<>();
-        List<Map<String, String>> rows = new ArrayList<>();
-        AnalysisEventListener<Map<Integer, String>> listener = new AnalysisEventListener<>() {
-            @Override
-            public void invokeHeadMap(Map<Integer, String> headMap, AnalysisContext context) {
-                for (int i = 0; i < headMap.size(); i++) {
-                    columns.add(headMap.get(i));
-                }
-            }
-
-            @Override
-            public void invoke(Map<Integer, String> data, AnalysisContext context) {
-                Map<String, String> row = new LinkedHashMap<>();
-                for (int i = 0; i < columns.size(); i++) {
-                    row.put(columns.get(i), data.get(i));
-                }
-                rows.add(row);
-            }
-
-            @Override
-            public void doAfterAllAnalysed(AnalysisContext context) {
-            }
-        };
-
+        byte[] bytes;
         try {
-            var readerBuilder = EasyExcel.read(file.getInputStream(), listener);
-            if ("csv".equals(fileType)) {
-                readerBuilder.excelType(ExcelTypeEnum.CSV);
-            }
-            readerBuilder.sheet().doRead();
-
-            if (columns.isEmpty()) {
-                return Result.fail("文件没有表头");
-            }
-
-            Dataset dataset = new Dataset();
-            dataset.setUserId(UserHolder.getUser().getId());
-            dataset.setName(originalFilename);
-            dataset.setFileType(fileType);
-            dataset.setRowCount(rows.size());
-            dataset.setColCount(columns.size());
-            dataset.setColumnsJson(objectMapper.writeValueAsString(columns));
-            datasetMapper.insert(dataset);
-
-            for (int i = 0; i < rows.size(); i++) {
-                DatasetRow row = new DatasetRow();
-                row.setDatasetId(dataset.getId());
-                row.setRowIndex(i);
-                row.setDataJson(objectMapper.writeValueAsString(rows.get(i)));
-                datasetRowMapper.insert(row);
-            }
-            return Result.ok(dataset.getId());
+            bytes = file.getBytes();
         } catch (IOException e) {
-            return Result.fail("文件解析失败");
+            return Result.fail("文件读取失败");
         }
+        Dataset dataset = new Dataset();
+        dataset.setUserId(UserHolder.getUser().getId());
+        dataset.setName(originalFilename);
+        dataset.setFileType(fileType);
+        dataset.setRowCount(0);
+        dataset.setColCount(0);
+        dataset.setColumnsJson("[]");
+        dataset.setStatus("PROCESSING");
+        datasetMapper.insert(dataset);
+        datasetParseService.parseAsync(dataset.getId(), bytes, fileType);
+        return Result.ok(dataset.getId());
     }
 
     public Result list() {
@@ -146,6 +108,12 @@ public class DatasetService {
         Long userId = UserHolder.getUser().getId();
         if (dataset == null || !dataset.getUserId().equals(userId)) {
             return Result.fail("数据集不存在");
+        }
+        if ("PROCESSING".equals(dataset.getStatus())) {
+            return Result.fail("数据还在处理中，请稍等");
+        }
+        if ("FAILED".equals(dataset.getStatus())) {
+            return Result.fail("数据解析失败，请重新上传");
         }
         String cacheKey = "insight:dataset:overview:" + id;
         String cached = stringRedisTemplate.opsForValue().get(cacheKey);
@@ -380,5 +348,28 @@ public class DatasetService {
         result.put("seriesData", values);
         result.put("pieData", pieData);
         return Result.ok(result);
+    }
+    public Result status(Long id) {
+        Dataset dataset = datasetMapper.selectById(id);
+        Long userId = UserHolder.getUser().getId();
+        if (dataset == null || !dataset.getUserId().equals(userId)) {
+            return Result.fail("数据集不存在");
+        }
+        return Result.ok(Map.of("status", dataset.getStatus()));
+    }
+    public Result delete(Long id) {
+        Dataset dataset = datasetMapper.selectById(id);
+        Long userId = UserHolder.getUser().getId();
+        if (dataset == null || !dataset.getUserId().equals(userId)) {
+            return Result.fail("数据集不存在");
+        }
+        if ("PROCESSING".equals(dataset.getStatus())) {
+            return Result.fail("数据还在处理中，稍后再删");
+        }
+        datasetRowMapper.delete(new LambdaQueryWrapper<DatasetRow>()
+                .eq(DatasetRow::getDatasetId, id));
+        datasetMapper.deleteById(id);
+        stringRedisTemplate.delete("insight:dataset:overview:" + id);
+        return Result.ok();
     }
 }

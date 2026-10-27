@@ -19,4 +19,5 @@ public class Dataset {
     private Integer colCount;
     private String columnsJson;
     private LocalDateTime createTime;
+    private String status;
 }

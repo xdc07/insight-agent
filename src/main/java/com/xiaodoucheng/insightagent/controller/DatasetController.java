@@ -2,12 +2,7 @@ package com.xiaodoucheng.insightagent.controller;
 
 import com.xiaodoucheng.insightagent.common.Result;
 import com.xiaodoucheng.insightagent.service.DatasetService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -38,5 +33,12 @@ public class DatasetController {
     public Result overview(@PathVariable Long id) {
         return datasetService.overview(id);
     }
-
+    @GetMapping("/{id}/status")
+    public Result status(@PathVariable Long id) {
+        return datasetService.status(id);
+    }
+    @DeleteMapping("/{id}")
+    public Result delete(@PathVariable Long id) {
+        return datasetService.delete(id);
+    }
 }
