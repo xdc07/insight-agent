@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.function.Supplier;
+
 
 @Slf4j
 @Service
@@ -60,17 +62,18 @@ public class AnalysisService {
         }
         String content;
         try {
-            content = chatClient.prompt()
+            content = callWithRetry(() -> chatClient.prompt()
                     .system("你是一名资深数据分析师，擅长从统计结果中提炼业务洞察。")
                     .user("下面是某个数据集的统计概况（JSON），包含行列数、每列的类型、缺失值、数值列的合计/均值/最大/最小、文本列的高频取值：\n"
                             + statsJson
                             + "\n请用中文写一段分析：先概括数据整体情况，再指出 2 到 3 个关键发现，最后给 1 到 2 条可执行的经营建议。只能使用统计中给出的数字，不要编造。")
                     .call()
-                    .content();
+                    .content(), "一键分析");
         } catch (Exception e) {
-            log.error("调用 DeepSeek 失败", e);
+            log.error("调用 DeepSeek 失败（重试后仍失败）", e);
             return Result.fail("模型调用失败，先检查 DeepSeek 余额和网络");
         }
+
         AnalysisRecord record = new AnalysisRecord();
         record.setUserId(UserHolder.getUser().getId());
         record.setDatasetId(datasetId);
@@ -176,14 +179,15 @@ public class AnalysisService {
         String conclusion;
         try {
             String statsJson = objectMapper.writeValueAsString(ov);
-            conclusion = chatClient.prompt()
+            conclusion = callWithRetry(() -> chatClient.prompt()
                     .system("你是一名资深数据分析师。根据给定的数据集统计概况 JSON，写一段中文分析结论，200 字左右，包含两到三个核心发现和一条可执行建议。只输出正文，不要加标题，不许编造 JSON 里没有的数字。")
                     .user(statsJson)
                     .call()
-                    .content();
+                    .content(), "报告结论");
         } catch (Exception e) {
             conclusion = "结论生成失败，请稍后重试。";
         }
+
 
         Dataset dataset = datasetMapper.selectById(datasetId);
         Map<String, Object> report = new LinkedHashMap<>();
@@ -202,5 +206,25 @@ public class AnalysisService {
         item.put("value", value);
         return item;
     }
+    private String callWithRetry(Supplier<String> call, String scene) {
+        Exception last = null;
+        for (int i = 1; i <= 3; i++) {
+            try {
+                return call.get();
+            } catch (Exception e) {
+                last = e;
+                log.warn("{} 第 {} 次调用失败", scene, i, e);
+                if (i < 3) {
+                    try {
+                        Thread.sleep(500L * i);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+        }
+        throw new RuntimeException(last);
+    }
+
 }
 
