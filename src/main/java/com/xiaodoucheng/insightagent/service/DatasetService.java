@@ -14,9 +14,10 @@ import com.xiaodoucheng.insightagent.entity.DatasetRow;
 import com.xiaodoucheng.insightagent.mapper.DatasetMapper;
 import com.xiaodoucheng.insightagent.mapper.DatasetRowMapper;
 import com.xiaodoucheng.insightagent.utils.UserHolder;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.data.redis.core.RedisTemplate;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,10 +30,12 @@ public class DatasetService {
     private final DatasetMapper datasetMapper;
     private final DatasetRowMapper datasetRowMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public DatasetService(DatasetMapper datasetMapper, DatasetRowMapper datasetRowMapper) {
+    public DatasetService(DatasetMapper datasetMapper, DatasetRowMapper datasetRowMapper, StringRedisTemplate stringRedisTemplate) {
         this.datasetMapper = datasetMapper;
         this.datasetRowMapper = datasetRowMapper;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     public Result upload(MultipartFile file) {
@@ -144,6 +147,18 @@ public class DatasetService {
         if (dataset == null || !dataset.getUserId().equals(userId)) {
             return Result.fail("数据集不存在");
         }
+        String cacheKey = "insight:dataset:overview:" + id;
+        String cached = stringRedisTemplate.opsForValue().get(cacheKey);
+        if (cached != null) {
+            try {
+                Map<String, Object> cacheResult = objectMapper.readValue(cached,
+                        new TypeReference<Map<String, Object>>() {});
+                System.out.println("overview 命中缓存 datasetId=" + id);
+                return Result.ok(cacheResult);
+            } catch (JsonProcessingException e) {
+                stringRedisTemplate.delete(cacheKey);
+            }
+        }
         List<DatasetRow> rows = datasetRowMapper.selectList(new LambdaQueryWrapper<DatasetRow>()
                 .eq(DatasetRow::getDatasetId, id)
                 .orderByAsc(DatasetRow::getRowIndex));
@@ -215,6 +230,11 @@ public class DatasetService {
         result.put("rowCount", data.size());
         result.put("colCount", columns.size());
         result.put("columns", columnStats);
+        try {
+            stringRedisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(result));
+            System.out.println("overview 已写入缓存 datasetId=" + id);
+        } catch (JsonProcessingException e) {
+        }
         return Result.ok(result);
     }
 
