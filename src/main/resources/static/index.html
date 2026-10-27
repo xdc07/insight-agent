@@ -135,6 +135,13 @@
     .dataset-item .name-line { display: flex; justify-content: space-between; align-items: center; }
     .dataset-item .fname { font-weight: 600; word-break: break-all; }
     .ftag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #fdf3e0; color: #a86f14; border: 1px solid #f0d9a8; white-space: nowrap; margin-left: 8px; }
+    .ftag.proc { animation: ftagpulse 1.4s ease-in-out infinite; }
+    .ftag.fail { background: #fdecea; color: #b03a2e; border-color: #f0b8b1; }
+    @keyframes ftagpulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+    .empty-card { text-align: center; padding: 34px 16px; border: 1.5px dashed #e7d6b8; border-radius: 14px; color: #a08b6d; background: #fffdf8; font-size: 14px; margin-bottom: 14px; line-height: 1.6; }
+    .empty-card .big { font-size: 30px; display: block; margin-bottom: 8px; }
+    .skel { height: 14px; border-radius: 7px; background: linear-gradient(90deg, #f3e9d8, #e7d9bd, #f3e9d8); background-size: 200% 100%; animation: skelmove 1.2s linear infinite; margin: 12px 0; }
+    @keyframes skelmove { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .ds-del { margin-left: auto; border: 1px solid #eccdb8; background: #fff8ef; color: #b0562f; border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
     .ds-del:hover { background: #fbe9d9; border-color: #d9a05b; }
     .dataset-item .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
@@ -234,6 +241,7 @@
                 <span class="chip" data-q="分析一下销售额随日期的趋势">📈 销售趋势</span>
                 <span class="chip" data-q="按品类统计销售额，各品类占比怎么样？">🥧 品类占比</span>
             </div>
+            <div class="empty-card" id="chatEmpty" hidden><span class="big">🐻</span>还没有数据集，先点左下角的熊头按钮上传一个 Excel 或 CSV，就能开始提问了。</div>
             <div id="chatLog"></div>
             <div class="chat-input">
                 <button class="attach-btn" id="btnAttach" title="附加文件上传"><svg viewBox="0 0 48 48"><circle cx="13" cy="10" r="6" fill="#c98d54"/><circle cx="13" cy="10" r="3" fill="#f2c94c"/><circle cx="33" cy="10" r="6" fill="#c98d54"/><circle cx="33" cy="10" r="3" fill="#f2c94c"/><circle cx="23" cy="25" r="15" fill="#e9c491"/><circle cx="17.5" cy="23" r="2" fill="#43301d"/><circle cx="28.5" cy="23" r="2" fill="#43301d"/><ellipse cx="23" cy="29" rx="5.4" ry="3.9" fill="#ffffff"/><path d="M23 27.2v1.7M23 28.9q-2.04 1.87 -4.25 0.935M23 28.9q2.04 1.87 4.25 0.935" stroke="#43301d" stroke-width="1.36" fill="none" stroke-linecap="round"/><circle cx="38" cy="37" r="8.5" fill="#d9a05b" stroke="#fffdf9" stroke-width="2.5"/><path d="M38 32.5v9M33.5 37h9" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"/></svg></button>
@@ -247,7 +255,8 @@
         <section class="view" id="view-charts">
             <div class="card">
                 <h2>生成图表</h2>
-                <div class="row" style="margin-bottom:12px">
+                <div class="empty-card" id="chartsEmpty" hidden><span class="big">📊</span>还没有数据集，先上传一个文件，这里就能按列生成图表。</div>
+                <div class="row" id="chartControls" style="margin-bottom:12px">
                     <select id="chartType">
                         <option value="bar">柱状图</option>
                         <option value="line">折线图</option>
@@ -265,7 +274,7 @@
                     <button id="btnChart">生成图表</button>
                 </div>
                 <div id="chart"></div>
-                <p class="hint">折线图时类目列选日期列；柱状图和饼图的类目列选门店、品类这类分组列。</p>
+                <p class="hint" id="chartHint">折线图时类目列选日期列；柱状图和饼图的类目列选门店、品类这类分组列。</p>
             </div>
         </section>
 
@@ -273,7 +282,8 @@
         <section class="view" id="view-report">
             <div class="card" id="reportCard">
                 <h2>分析报告</h2>
-                <div class="row" style="margin-bottom:12px">
+                <div class="empty-card" id="reportEmpty" hidden><span class="big">📝</span>还没有数据集，先上传一个文件，这里就能一键生成分析报告。</div>
+                <div class="row" id="reportToolbar" style="margin-bottom:12px">
                     <button id="btnReport">生成报告</button>
                     <button id="btnExportJson" class="ghost" disabled>下载 JSON</button>
                     <button id="btnPrint" class="ghost" disabled>打印 / 存 PDF</button>
@@ -551,12 +561,12 @@ async function loadDatasets() {
             }
             if (d.status === 'PROCESSING') {
                 const stag = document.createElement('span');
-                stag.className = 'ftag';
+                stag.className = 'ftag proc';
                 stag.textContent = '处理中';
                 nameLine.appendChild(stag);
             } else if (d.status === 'FAILED') {
                 const stag = document.createElement('span');
-                stag.className = 'ftag';
+                stag.className = 'ftag fail';
                 stag.textContent = '解析失败';
                 nameLine.appendChild(stag);
             }
@@ -595,7 +605,31 @@ async function loadDatasets() {
             currentDatasetId = null;
             document.getElementById('dsHint').textContent = '';
         }
+        updateEmptyStates();
     } catch (e) { /* 未登录时静默 */ }
+}
+
+/* 没有数据集时，对话/图表/报告页显示空状态卡片，并藏起操作区 */
+function updateEmptyStates() {
+    const no = !currentDatasetId;
+    const chatEmpty = document.getElementById('chatEmpty');
+    if (chatEmpty) chatEmpty.hidden = !no;
+    const chartsEmpty = document.getElementById('chartsEmpty');
+    if (chartsEmpty) chartsEmpty.hidden = !no;
+    const reportEmpty = document.getElementById('reportEmpty');
+    if (reportEmpty) reportEmpty.hidden = !no;
+    const cc = document.getElementById('chartControls');
+    if (cc) cc.style.display = no ? 'none' : '';
+    const ch = document.getElementById('chart');
+    if (ch) ch.style.display = no ? 'none' : '';
+    const cht = document.getElementById('chartHint');
+    if (cht) cht.style.display = no ? 'none' : '';
+    const rt = document.getElementById('reportToolbar');
+    if (rt) rt.style.display = no ? 'none' : '';
+    ['kpiRow', 'reportCharts', 'reportConclusion'].forEach(id2 => {
+        const el = document.getElementById(id2);
+        if (el) el.style.display = no ? 'none' : '';
+    });
 }
 
 document.getElementById('datasetSelect').onchange = e => {
@@ -612,6 +646,7 @@ async function selectDataset(id, name) {
     currentDatasetName = name || currentDatasetName;
     document.getElementById('datasetSelect').value = String(id);
     document.getElementById('dsHint').textContent = currentDatasetName;
+    document.getElementById('previewBox').innerHTML = '<span class="hint">正在加载预览…</span>';
     // 刷新“我的”页列表高亮
     document.querySelectorAll('#datasetList .dataset-item').forEach((el, i) => {
         el.classList.toggle('active', datasetsCache[i] && datasetsCache[i].id === id);
@@ -628,6 +663,7 @@ async function selectDataset(id, name) {
         renderPreview(cols, rows);
     } catch (e) { alert(e.message); }
     loadOverview(id);
+    updateEmptyStates();
 }
 
 function fillColumnSelects(cols) {
@@ -676,6 +712,8 @@ document.getElementById('btnUpload').onclick = async () => {
 /* ---------- 概况与预览 ---------- */
 async function loadOverview(id) {
     const box = document.getElementById('overviewBox');
+    box.innerHTML = '<span class="hint">正在加载数据概况…</span>' +
+        '<div class="skel" style="width:92%"></div><div class="skel" style="width:78%"></div><div class="skel" style="width:85%"></div>';
     try {
         const r = await api('/dataset/' + id + '/overview', { headers: headers(false) });
         const ov = checkResult(r);
