@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.redis.core.RedisTemplate;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class DatasetService {
@@ -166,6 +163,7 @@ public class DatasetService {
                 }
             }
             stat.put("missing", missing);
+            stat.put("missingRate", data.isEmpty() ? 0 : round2(missing * 100.0 / data.size()));
             if (numeric && !numbers.isEmpty()) {
                 stat.put("type", "numeric");
                 double sum = numbers.stream().mapToDouble(Double::doubleValue).sum();
@@ -175,6 +173,7 @@ public class DatasetService {
                 stat.put("avg", round2(sum / numbers.size()));
                 stat.put("max", round2(max));
                 stat.put("min", round2(min));
+                stat.put("outliers", countOutliers(numbers));
             } else {
                 stat.put("type", "text");
                 stat.put("distinctCount", counts.size());
@@ -197,7 +196,23 @@ public class DatasetService {
         result.put("datasetId", id);
         result.put("rowCount", data.size());
         result.put("colCount", columns.size());
+        Set<String> seenRows = new HashSet<>();
+        int duplicateRows = 0;
+        for (Map<String, String> row : data) {
+            StringBuilder key = new StringBuilder();
+            for (String column : columns) {
+                String v = row.get(column);
+                key.append(v == null ? "" : v.trim()).append('\u0001');
+            }
+            if (!seenRows.add(key.toString())) {
+                duplicateRows++;
+            }
+        }
+        Map<String, Object> quality = new LinkedHashMap<>();
+        quality.put("duplicateRows", duplicateRows);
+        quality.put("duplicateRate", data.isEmpty() ? 0 : round2(duplicateRows * 100.0 / data.size()));
         result.put("columns", columnStats);
+        result.put("quality", quality);
         try {
             stringRedisTemplate.opsForValue().set(cacheKey, objectMapper.writeValueAsString(result));
             System.out.println("overview 已写入缓存 datasetId=" + id);
@@ -371,5 +386,34 @@ public class DatasetService {
         datasetMapper.deleteById(id);
         stringRedisTemplate.delete("insight:dataset:overview:" + id);
         return Result.ok();
+    }
+    private int countOutliers(List<Double> numbers) {
+        if (numbers.size() < 4) {
+            return 0;
+        }
+        List<Double> sorted = new ArrayList<>(numbers);
+        sorted.sort(Double::compareTo);
+        double q1 = percentile(sorted, 25);
+        double q3 = percentile(sorted, 75);
+        double iqr = q3 - q1;
+        double lower = q1 - 1.5 * iqr;
+        double upper = q3 + 1.5 * iqr;
+        int count = 0;
+        for (double v : numbers) {
+            if (v < lower || v > upper) {
+                count++;
+            }
+        }
+        return count;
+    }
+    private double percentile(List<Double> sorted, double p) {
+        double pos = p / 100.0 * (sorted.size() - 1);
+        int lo = (int) Math.floor(pos);
+        int hi = (int) Math.ceil(pos);
+        if (lo == hi) {
+            return sorted.get(lo);
+        }
+        double weight = pos - lo;
+        return sorted.get(lo) * (1 - weight) + sorted.get(hi) * weight;
     }
 }
