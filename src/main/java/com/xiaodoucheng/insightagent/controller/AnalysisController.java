@@ -45,5 +45,10 @@ public class AnalysisController {
     public Result report(@PathVariable Long datasetId) {
         return analysisService.report(datasetId);
     }
+    @GetMapping("/chat/history/{datasetId}")
+    public Result chatHistory(@PathVariable Long datasetId) {
+        return analysisService.chatHistory(datasetId);
+    }
+
 }
 

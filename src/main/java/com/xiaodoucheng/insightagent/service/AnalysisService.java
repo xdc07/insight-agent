@@ -25,6 +25,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.function.Supplier;
+import com.xiaodoucheng.insightagent.config.RedisChatMemoryRepository;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
+
 
 
 @Slf4j
@@ -38,15 +42,19 @@ public class AnalysisService {
     private final DatasetTools datasetTools;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MessageChatMemoryAdvisor memoryAdvisor;
+    private final RedisChatMemoryRepository redisChatMemoryRepository;
+
     public AnalysisService(DatasetService datasetService, DatasetMapper datasetMapper,
                            AnalysisRecordMapper analysisRecordMapper,
-                           ChatClient.Builder chatClientBuilder, DatasetTools datasetTools,ChatMemory chatMemory) {
+                           ChatClient.Builder chatClientBuilder, DatasetTools datasetTools,ChatMemory chatMemory,RedisChatMemoryRepository redisChatMemoryRepository) {
         this.datasetService = datasetService;
         this.datasetMapper = datasetMapper;
         this.analysisRecordMapper = analysisRecordMapper;
         this.chatClient = chatClientBuilder.build();
         this.datasetTools = datasetTools;
         this.memoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
+        this.redisChatMemoryRepository = redisChatMemoryRepository;
+
     }
 
     public Result analyze(Long datasetId) {
@@ -224,6 +232,32 @@ public class AnalysisService {
             }
         }
         throw new RuntimeException(last);
+    }
+    public Result chatHistory(Long datasetId) {
+        Dataset dataset = datasetMapper.selectById(datasetId);
+        Long userId = UserHolder.getUser().getId();
+        if (dataset == null || !dataset.getUserId().equals(userId)) {
+            return Result.fail("数据集不存在");
+        }
+        List<Message> messages = redisChatMemoryRepository.findByConversationId(userId + ":" + datasetId);
+        List<Map<String, String>> result = new ArrayList<>();
+        for (Message message : messages) {
+            String text = message.getText();
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            Map<String, String> item = new LinkedHashMap<>();
+            if (message.getMessageType() == MessageType.USER) {
+                item.put("role", "user");
+            } else if (message.getMessageType() == MessageType.ASSISTANT) {
+                item.put("role", "assistant");
+            } else {
+                continue;
+            }
+            item.put("text", text);
+            result.add(item);
+        }
+        return Result.ok(result);
     }
 
 }

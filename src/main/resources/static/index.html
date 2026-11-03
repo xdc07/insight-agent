@@ -663,6 +663,7 @@ async function selectDataset(id, name) {
         fillColumnSelects(cols);
         renderPreview(cols, rows);
     } catch (e) { alert(e.message); }
+    await loadChatHistory(id);
     loadOverview(id);
     updateEmptyStates();
 }
@@ -795,6 +796,18 @@ function addAiMsg() {
 function addAiNotice(text) {
     const bubble = addAiMsg();
     bubble.textContent = text;
+}
+
+async function loadChatHistory(id) {
+    chatLog.innerHTML = '';
+    try {
+        const r = await api('/analysis/chat/history/' + id, { headers: headers(false) });
+        const list = checkResult(r) || [];
+        list.forEach(m => {
+            if (m.role === 'user') addUserMsg(m.text);
+            else { const b = addAiMsg(); renderMarkdown(b, m.text); }
+        });
+    } catch (e) { /* 历史加载失败不影响正常提问 */ }
 }
 
 function renderMarkdown(bubble, text) {
