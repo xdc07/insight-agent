@@ -33,6 +33,10 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         user.setId(Long.valueOf(userMap.get("id").toString()));
         user.setNickName((String) userMap.get("nickName"));
         user.setPhone((String) userMap.get("phone"));
+        // 角色从 Redis 里的 Token 恢复，老 Token 里没有 role 字段，空就按 USER 算，不用让老用户重新注册。
+        Object roleObj = userMap.get("role");
+        String role = roleObj == null || roleObj.toString().isBlank() ? "USER" : roleObj.toString();
+        user.setRole(role);
         UserHolder.saveUser(user);
         stringRedisTemplate.expire(key, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
         return true;
@@ -43,4 +47,3 @@ public class RefreshTokenInterceptor implements HandlerInterceptor {
         UserHolder.removeUser();
     }
 }
-

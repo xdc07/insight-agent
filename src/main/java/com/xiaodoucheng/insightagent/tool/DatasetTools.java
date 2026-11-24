@@ -21,7 +21,7 @@ public class DatasetTools {
     }
 
     // 工具可能在非请求线程上执行，ThreadLocal 里没有当前用户，
-// 所以从 ToolContext 取出 userId，手动塞回 UserHolder。返回 false 表示没拿到身份。
+    // 所以从 ToolContext 取出 userId，手动塞回 UserHolder。返回 false 表示没拿到身份。
     private boolean bindUser(ToolContext toolContext) {
         Object userId = toolContext.getContext().get("userId");
         if (userId == null) {

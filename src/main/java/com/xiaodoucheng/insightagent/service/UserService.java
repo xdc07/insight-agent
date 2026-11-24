@@ -54,6 +54,8 @@ public class UserService {
             user = new User();
             user.setPhone(phone);
             user.setNickName("user_" + phone.substring(7));
+            // 新用户默认是普通用户，管理员只能由已有的管理员在后台改，不能自己注册成管理员。
+            user.setRole("USER");
             userMapper.insert(user);
         }
         String token = UUID.randomUUID().toString().replace("-", "");
@@ -64,6 +66,13 @@ public class UserService {
         if (user.getIcon() != null) {
             userMap.put("icon", user.getIcon());
         }
+        // 角色跟着 Token 一起存进 Redis，后面 RefreshTokenInterceptor 会把它恢复到 ThreadLocal 里。
+        // 老用户在加 role 字段之前注册的，库里可能是空，空就按 USER 算。
+        String role = user.getRole();
+        if (role == null || role.isBlank()) {
+            role = "USER";
+        }
+        userMap.put("role", role);
         String tokenKey = RedisConstants.LOGIN_USER_KEY + token;
         stringRedisTemplate.opsForHash().putAll(tokenKey, userMap);
         stringRedisTemplate.expire(tokenKey, RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
@@ -88,4 +97,3 @@ public class UserService {
     }
 
 }
-
